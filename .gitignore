@@ -1,0 +1,5 @@
+*.pkl
+*.index
+saved_messages.jsonl
+.env
+__pycache__
