@@ -30,6 +30,7 @@ class Giacomino:
         self.index_file = "faiss_index.index"
         self.doc_file = "faiss_docs.pkl"
 
+        self.top_k = int(os.environ.get("RETRIEVE_TOP_K"))
         self._load_prompts()
         self._load_documents()
 
@@ -57,7 +58,7 @@ class Giacomino:
             # Split by "---" and strip whitespace
             self.documents = [chunk.strip() for chunk in content.split("---") if chunk.strip()]
         if os.getenv("FLASK_ENV") != "production":
-            self.documents = self.documents[:2]
+            self.documents = self.documents[:]
         
         self.logger.info("Embedding docs...")
         embeddings = self._embed_texts(self.documents)
@@ -69,9 +70,9 @@ class Giacomino:
 
         self.logger.info(f"Loaded {len(self.documents)} documents into FAISS index")
 
-    def retrieve_context(self, query: str, k: int = 3) -> List[str]:
+    def retrieve_context(self, query: str) -> List[str]:
         query_vec = self._embed_texts([query])
-        distances, indices = self.index.search(query_vec, k)
+        distances, indices = self.index.search(query_vec, self.top_k)
         return [self.documents[i] for i in indices[0] if i < len(self.documents)]
 
     def _send_chat_completion_request(self, system_prompt, messages) -> str:
@@ -101,7 +102,7 @@ class Giacomino:
         user_message = messages[-1]["content"]
 
         # Retrieve context
-        context_docs = self.retrieve_context(user_message, k=os.environ.get("RETRIEVE_TOP_K"))
+        context_docs = self.retrieve_context(user_message)
         context = "\n".join(context_docs) if context_docs else "No specific context available."
         
         # Format prompt

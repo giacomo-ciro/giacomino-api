@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 from giacomino import Giacomino
 from utils import MyLogger
+import traceback
 
 # Init logger
 logger = MyLogger()
@@ -96,7 +97,7 @@ def chat():
         })
         
     except Exception as e:
-        logger.error(f"Error in chat endpoint: {e}")
+        logger.error(f"Error in chat endpoint: {e}\n{traceback.format_exc()}")
         return jsonify({'error': 'Internal server error'}), 500
     
 
