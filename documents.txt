@@ -1,66 +1,62 @@
 Giacomo is 22 years old.
 Giacomo full name is Giacomo Cirò.
-Giacomo is currently pursuing a Master of Science in Artificial Intelligence at Bocconi University in Milan, Italy.
-He graduated cum laude with a Bachelor of Science in Economics and Computer Science from Bocconi University.
-Giacomo co-founded Bocconi Students for Machine Learning (BSML), the first machine learning project-incubator at his university.
-He is currently working as a researcher at the Bocconi Institute for Data Science and Analytics. His research focuses on Machine Learning applied to Biology, specifically developing BioFormer: a novel architecture for gene expression modeling. Giacomo is also exploring and empirically measuring scaling laws of machine learning models when applied to transcriptomics data.
+He is based in Milan, Italy, where he studies at Bocconi University.
 His passion lies in Mathematics and Computer Science, and he aims for a career in Machine Learning research, Software Engineering, and Data Science.
-He wants to connect minds, not only layers, which motivated him to co-found BSML.
+---
 Giacomo has expertise in artificial intelligence, machine learning, data science, software engineering, and computational biology.
 His educational background combines economics, computer science, and artificial intelligence.
-He is based in Milan, Italy, where he studies at Bocconi University.
-The BioFormer project he's working on represents a novel approach to gene expression modeling using transformer architectures.
-His research at BIDSA involves both theoretical and practical aspects of machine learning in biological applications.
-Giacomo has worked on comparing CNN saliency maps with expert annotations on pediatric chest X-rays to understand if AI models identify pneumonia using the same visual cues as doctors.
-Giacomo developed a method to improve computational efficiency of Diffusion Language Models by predicting output sequence length before generation, achieving 80% accuracy in length prediction.
-Giacomo created Gooper, a search engine for influencers, in December 2024.
-Giacomo implemented the eight-point algorithm for estimating the fundamental matrix between two camera views using Python.
-Giacomo developed a computer vision algorithm that estimates a person's height from a single image using a reference object in the scene.
-Giacomo built an information retrieval algorithm that retrieves the most relevant answer from a corpus given a user query.
-Giacomo created an optimal Wordle solver that achieves 100% success rate with an average of 2.91 guesses in 0.5 seconds.
-Giacomo developed an image compression pipeline using K-means clustering optimized through Integer Programming techniques.
-Giacomo analyzed 31,710 Indian companies to identify those with consistent strong performance before and after 2020, exploring the role of information systems in business resilience.
-Giacomo used debugging tools like gdb and AFL++ to identify and fix two bugs in SCIP, an open-source linear programming solver.
-Giacomo implemented a compiler for a custom boolean programming language using Python.
-Giacomo's Bachelor thesis enhanced the scGPT transformer model for gene expression prediction by incorporating biological knowledge of transcriptional regulation.
-Giacomo applied evolutionary algorithms to improve matching stability beyond the traditional Deferred Acceptance Algorithm for two-sided matching problems in his project 'Evolving Tinder'.
-Giacomo created an interactive web application demonstrating Q-learning algorithm and the Bellman Equation through visual examples.
-Giacomo built an automated browser bot for maximizing rewards in SNAI Daily Spin game.
-Giacomo conducted statistical analysis of how standardization in customer support affects satisfaction using OLS regression.
-Giacomo created an interactive dashboard displaying Formula 1 statistics and insights from historical data with automatic updates after each Grand Prix.
-Giacomo applied Fixed Effect and Random Effect models to estimate firm production functions while controlling for individual and time-specific heterogeneity.
-Giacomo trained neural networks on word corpora to generate novel, realistic-sounding words that don't exist in any language.
-Giacomo built machine learning models for predicting house prices in Milan, Rome, and Venice using a dataset of over 45,000 properties.
-Giacomo estimated Austria's interest rate policy using OLS regression and Taylor's rule framework with comprehensive diagnostic testing.
-Giacomo renewed his contract as Machine Learning Researcher at BIDSA on May 1, 2025.
-Giacomo passed his Software Engineering exam on January 13, 2025.
-Giacomo passed his Mathematical Methods in Computer Science exam on January 9, 2025.
-Giacomo passed his Algorithms for Optimization and Inference exam on December 11, 2024.
-Giacomo enrolled in his MSc in Artificial Intelligence on September 9, 2024.
-Giacomo started his position as Machine Learning Researcher at BIDSA on September 1, 2024.
-Giacomo restructured BSML as the first Machine Learning Project Incubator at Bocconi University in August 2024.
-Giacomo graduated with 110 Cum Laude on July 18, 2024.
-Giacomo completed his last BSc exam on June 18, 2024.
-Giacomo submitted his Bachelor's Thesis on June 13, 2024.
-Giacomo started his boxing career in September 2023.
-Giacomo decided to pursue a career in Machine Learning in May 2023.
-Giacomo enrolled in his BSc in Economics and Computer Science in September 2021.
-Giacomo received his High School Diploma in June 2021.
-Giacomo established a Clash of Clans village #2VQLJOP on October 3, 2013, which is currently Town Hall 16.
-Giacomo started his rugby career in September 2010.
-Giacomo joined a boy-scout group in September 2009.
-Giacomo has a GPA of 30.0/30 in his MSc program at Bocconi University.
-Giacomo is a recipient of the Bocconi Graduate Merit Award consisting of full fees and tuition waiver worth approximately 36,000 euros.
+Giacomo is currently pursuing a Master of Science in Artificial Intelligence at Bocconi University in Milan, Italy.
+He graduated cum laude with a Bachelor of Science in Economics and Computer Science from Bocconi University.
+Giacomo's Bachelor thesis improved the scGPT transformer model for gene expression prediction by integrating biological knowledge of transcriptional regulation.
 Giacomo has taken coursework in Deep Learning, Reinforcement Learning, Computer Vision, Language Technology, and Information Theory.
-Giacomo secured two formal research contracts for the ERC-funded MicroC project under Prof. Francesca Buffa's guidance.
-Giacomo designed a novel model architecture leveraging prior biological knowledge and insights from AlphaFold 2 for gene expression modeling.
-Giacomo uses SLURM for efficient job-scheduling on high-performance computing clusters.
+---
+Giacomo co-founded Bocconi Students for Machine Learning (BSML), the first machine learning project-incubator at his university.
+He wants to connect minds, not only layers, which motivated him to co-found BSML.
 Giacomo obtained 150+ signatures to found BSML and screened over 60 candidates for the association.
 Giacomo built and maintained BSML's website using HTML, CSS, and JavaScript.
 Giacomo supervised the publication of 3 articles on BSML's website and developed the "Thesis Repo" for free BSc thesis consultation.
 Giacomo planned and executed 5 events with external speakers attracting 150+ guests total.
 Giacomo organized a hackathon with 30 participants from 70+ applications, featuring euro prize in partnership with Boston Consulting Group X.
+---
+He is currently working as a researcher at the Bocconi Institute for Data Science and Analytics. His research focuses on Machine Learning applied to Biology, specifically developing BioFormer: a novel architecture for gene expression modeling. Giacomo is also exploring and empirically measuring scaling laws of machine learning models when applied to transcriptomics data.
+The BioFormer project he's working on represents a novel approach to gene expression modeling using transformer architectures.
+Giacomo secured two formal research contracts for the ERC-funded MicroC project under Prof. Francesca Buffa's guidance.
+Giacomo designed a novel model architecture leveraging prior biological knowledge and insights from AlphaFold 2 for gene expression modeling.
+Giacomo uses SLURM for efficient job-scheduling on high-performance computing clusters.
+---
+Giacomo has contributed to a diverse range of projects, such as:
+    - Comparing CNN saliency maps with expert annotations on pediatric chest X-rays to evaluate if AI models identify pneumonia using similar visual cues as clinicians.
+    - Designing a method to enhance computational efficiency of Diffusion Language Models by predicting output sequence length prior to generation, achieving 80% accuracy.
+    - Creating Gooper, a search engine for influencers, launched in December 2024.
+    - Implementing the eight-point algorithm in Python to estimate the fundamental matrix between two camera views.
+    - Developing a computer vision algorithm to estimate a person's height from a single image using a reference object.
+---
+Giacomo has contributed to a diverse range of projects, such as:
+    - Building an information retrieval system that selects the most relevant answer from a corpus based on user queries.
+    - Creating an optimal Wordle solver with a 100% success rate and an average of 2.91 guesses in 0.5 seconds.
+    - Developing an image compression pipeline using K-means clustering, optimized via Integer Programming.
+    - Analyzing 31,710 Indian companies to identify those with sustained strong performance before and after 2020, investigating the impact of information systems on business resilience.
+    - Using debugging tools such as gdb and AFL++ to identify and resolve bugs in SCIP, an open-source linear programming solver.
+---
+Giacomo has contributed to a diverse range of projects, such as:
+    - Implementing a compiler for a custom boolean programming language in Python.
+    - Applying evolutionary algorithms to enhance matching stability beyond the Deferred Acceptance Algorithm for two-sided matching problems in the project 'Evolving Tinder'.
+    - Developing an interactive web application to visually demonstrate the Q-learning algorithm and the Bellman Equation.
+    - Building an automated browser bot to maximize rewards in the SNAI Daily Spin game.
+    - Performing statistical analysis on the effects of standardization in customer support on satisfaction using OLS regression.
+---
+Giacomo has contributed to a diverse range of projects, such as:
+    - Creating an interactive dashboard for Formula 1 statistics and insights from historical data, with automatic updates after each Grand Prix.
+    - Applying Fixed Effect and Random Effect models to estimate firm production functions, accounting for individual and time-specific heterogeneity.
+    - Training neural networks on word corpora to generate novel, realistic-sounding words.
+    - Building machine learning models to predict house prices in Milan, Rome, and Venice using a dataset of over 45,000 properties.
+    - Estimating Austria's interest rate policy using OLS regression and Taylor's rule, with comprehensive diagnostic testing.
+---
+Giacomo has a GPA of 30.0/30 in his MSc program at Bocconi University.
+Giacomo is a recipient of the Bocconi Graduate Merit Award consisting of full fees and tuition waiver worth approximately 36,000 euros.
+---
 Giacomo works in access control for Formula 1 Paddock Club events, coordinating entry for 1,000+ guests. He worked at 8 Grand Prix events in 5 countries across 2 continents, leading teams of local stewards. In particular. he worked at 2023 Monza GP, 2023 Mexico City GP, 2024 Monaco GP, 2024 Austrian GP, 2024 British GP and 2024 United States GP.
+---
 Giacomo has technical skills in Python, R, SQL, StataSE, HTML-CSS-JS, Knime Analytics Platform, Office 365, SLURM, and Adobe Creative Cloud.
 Giacomo speaks English at C1 level with IELTS 8.0, Italian as native language, and Spanish at B1 level.
 Giacomo was an AGESCI boy-scout for over 10 years and worked as a summer camp animator and cook.
@@ -68,6 +64,8 @@ Giacomo played rugby in major Italian leagues for CUS Milano Rugby from 2010 to 
 Giacomo ran 21 km in 1 hour and 50 minutes and 10 km in 44 minutes.
 Giacomo loves studying and staying active. He used to play the drums and would love to learn the piano someday.
 Giacomo can type at 120 words per minute according to keybr.com.
+---
 Giacomo's contacts are: giacomociro02@gmail.com (email address), linkedin.com/in/giacomo-ciro (LinkedIn profile), github.com/giacomo-ciro (GitHub profile), giacomo-ciro.github.io (website).
+---
 Giacomo is currently in a relationship with Matilde, a beautiful red-haired girl studying medicine.
 In his free time, Giacomo loves playing video games. His favorites include Minecraft, Clash of Clans, Call of Duty, and Formula 1. Fun fact: he once bought a Formula 1 simulator but ended up returning it because he was spending too much time playing and needed to focus on studying. One of his dreams is to build an amazing racing simulator to have at home someday.
