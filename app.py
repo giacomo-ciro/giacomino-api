@@ -67,7 +67,11 @@ def status_check():
         "version": giacomino.version if giacomino else "N/A",
         "docs_available": giacomino.get_available_docs() if giacomino else "N/A",
         "logger_status": logger.get_stats(),
-        "logs_dump": logger.dumps()
+        "logs_dump": logger.dumps(),
+        "models":{
+            "model_text": giacomino.model_text if giacomino else "N/A",
+            "model_embeddings": giacomino.model_embeddings if giacomino else "N/A"
+        }
     })
 
 
