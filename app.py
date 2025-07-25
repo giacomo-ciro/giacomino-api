@@ -7,15 +7,16 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from giacomino import Giacomino
-from utils import MyLogger
+from utils import MyLogger, requires_env
+
+load_dotenv()
 
 # Init logger
-logger = MyLogger()
+logger = MyLogger(log_file=os.getenv("LOG_FILE", None))
 
 # Load environment variables
 if not os.path.exists(".env"):
     logger.error("Missing .env")
-load_dotenv()
 
 # set port env
 os.environ["PORT"] = "5001"
@@ -25,14 +26,14 @@ app = Flask(__name__)
 CORS(app)
 
 # Initialize Giacomino model
-TEXT_MODEL_PATH = "meta-llama/Llama-3.2-3B-Instruct-Turbo"
-EMB_MODEL_PATH = "BAAI/bge-large-en-v1.5"
 try:
     giacomino = Giacomino(
-        model_text=TEXT_MODEL_PATH, model_embeddings=EMB_MODEL_PATH, logger=logger
+        model_text=os.getenv("TEXT_MODEL_PATH"),
+        model_embeddings=os.getenv("EMB_MODEL_PATH"),
+        logger=logger,
     )
     logger.info(
-        f"Giacomino model initialized with {TEXT_MODEL_PATH} and {EMB_MODEL_PATH}."
+        f"Giacomino model initialized with {giacomino.model_text} and {giacomino.model_embeddings}."
     )
 except Exception as e:
     logger.error(f"Failed to initialize Giacomino: {e}")
@@ -44,18 +45,15 @@ def hello_world():
     """
     Returns the API documentation.
     """
-    return {
-        "message": "Giacomo Ciro's Personal Chatbot API",
-        "version": giacomino.version if giacomino else "N/A",
-        "endpoints": {
-            "/chat": "POST - Chat with Giacomino",
-            "/health": "GET - Check API health",
-            "/docs": "GET - Get documentation about Giacomo",
-        },
-    }
+    return jsonify(
+        {
+            "message": "Giacomo Ciro's Personal Chatbot API",
+        }
+    )
 
 
 @app.route("/status", methods=["GET"])
+@requires_env
 def status_check():
     """
     Status check endpoint.
@@ -63,10 +61,9 @@ def status_check():
     return jsonify(
         {
             "status": "healthy" if giacomino else "unhealthy",
-            "timestamp": datetime.now().isoformat(),
-            "model_loaded": giacomino is not None,
             "version": giacomino.version if giacomino else "N/A",
-            "docs_available": giacomino.get_available_docs() if giacomino else "N/A",
+            "timestamp": datetime.now().isoformat(),
+            "docs": giacomino.get_available_docs() if giacomino else "N/A",
             "logger_status": logger.get_stats(),
             "logs_dump": logger.dumps(),
             "models": {
@@ -78,6 +75,7 @@ def status_check():
 
 
 @app.route("/chat", methods=["POST"])
+@requires_env
 def chat():
     """
     Main chat endpoint for the personal chatbot.
@@ -94,6 +92,12 @@ def chat():
         if not messages:
             return jsonify({"error": "Empty message"}), 400
 
+        if sum(len(msg["content"]) for msg in messages) > int(os.getenv("MAX_CHARS")):
+            return jsonify(
+                {
+                    "error": "Conversation exceeded the character limit. Please start a new chat to continue."
+                }
+            ), 400
         # Generate response using Giacomino
         response = giacomino.generate_response(messages)
 
@@ -105,6 +109,7 @@ def chat():
 
 
 @app.route("/history", methods=["GET"])
+@requires_env
 def get_history():
     """
     Returns the chat history in JSON format. Auth using a HISTORY_KEY stored in .env

@@ -1,7 +1,11 @@
 import datetime
 import json
+import os
+from functools import wraps
 from pathlib import Path
 from typing import Any, Dict, Optional
+
+from flask import jsonify
 
 
 class MyLogger:
@@ -84,15 +88,6 @@ class MyLogger:
         """Return all logged messages as string"""
         return self.payload
 
-    def save_to_file(self, filepath: str):
-        """Save all logged messages to a specific file"""
-        try:
-            with open(filepath, "w", encoding="utf-8") as f:
-                f.write(self.payload)
-            self.info(f"Log saved to {filepath}")
-        except Exception as e:
-            self.error(f"Failed to save log to {filepath}: {e}")
-
     def clear(self):
         """Clear the payload and reset log count"""
         self.payload = ""
@@ -104,3 +99,13 @@ class MyLogger:
 
     def __repr__(self):
         return self.__str__()
+
+
+def requires_env(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if os.path.exists(".env"):
+            return func(*args, **kwargs)
+        return jsonify({"error": "Environment configuration missing."}), 400
+
+    return wrapper

@@ -5,3 +5,4 @@ saved_messages.jsonl
 __pycache__
 *ipynb
 .ruff_cache
+logs.*

@@ -33,7 +33,7 @@ class Giacomino:
         self.index_file = "faiss_index.index"
         self.doc_file = "faiss_docs.pkl"
 
-        self.top_k = int(os.environ.get("RETRIEVE_TOP_K"))
+        self.top_k = int(os.environ.get("RETRIEVE_TOP_K", 1))
         self._load_prompts()
         self._load_documents()
 
@@ -42,7 +42,7 @@ class Giacomino:
         assert path_to_sys.exists()
         with open(path_to_sys, "r") as f:
             self.system_prompt = f.read()
-        self.logger.info(f"System prompt loaded:\n\n---\n{self.system_prompt}\n---\n")
+        self.logger.info(f"System prompt loaded from {path_to_sys}")
 
     def _embed_texts(self, texts: List[str]) -> np.ndarray:
         response = self.together.embeddings.create(
@@ -61,8 +61,8 @@ class Giacomino:
             self.documents = [
                 chunk.strip() for chunk in content.split("---") if chunk.strip()
             ]
-        if os.getenv("FLASK_ENV") != "production":
-            self.documents = self.documents[:]
+        if os.getenv("FLASK_ENV") == "development":
+            self.documents = self.documents[:2]
 
         self.logger.info("Embedding docs...")
         embeddings = self._embed_texts(self.documents)
@@ -135,9 +135,9 @@ class Giacomino:
     def get_available_docs(self) -> Dict[str, Any]:
         try:
             return {
-                "total_documents": len(self.documents),
+                "quantity": len(self.documents),
                 "status": "available" if self.documents else "empty",
             }
         except Exception as e:
             self.logger.info(f"Error getting docs info: {e}")
-            return {"total_documents": 0, "status": "error"}
+            return {"quantity": 0, "status": "error"}
