@@ -1,24 +1,27 @@
-import os
 import json
+import os
 import time
-from typing import List, Dict, Any
 from pathlib import Path
-from together import Together
+from typing import Any, Dict, List
+
 import faiss
 import numpy as np
+from together import Together
 
 from utils import MyLogger
 
+
 class Giacomino:
     version = "1.0.0"
+
     def __init__(
         self,
-        logger:MyLogger,
-        model_text:str="meta-llama/Llama-3.2-3B-Instruct-Turbo",
-        model_embeddings:str="BAAI/bge-large-en-v1.5",
-    ):  
+        logger: MyLogger,
+        model_text: str = "meta-llama/Llama-3.2-3B-Instruct-Turbo",
+        model_embeddings: str = "BAAI/bge-large-en-v1.5",
+    ):
         self.logger = logger
-        self.together_api_key = os.getenv('TOGETHER_API_KEY')
+        self.together_api_key = os.getenv("TOGETHER_API_KEY")
         if not self.together_api_key:
             self.logger.error("TOGETHER_API_KEY environment variable not set")
             exit()
@@ -43,11 +46,10 @@ class Giacomino:
 
     def _embed_texts(self, texts: List[str]) -> np.ndarray:
         response = self.together.embeddings.create(
-            model=self.model_embeddings,
-            input=texts
+            model=self.model_embeddings, input=texts
         )
         embeddings = [item.embedding for item in response.data]
-        return np.array(embeddings).astype('float32')
+        return np.array(embeddings).astype("float32")
 
     def _load_documents(self):
         self.logger.info("Loading docs...")
@@ -56,13 +58,15 @@ class Giacomino:
         with open(docs_file, "r", encoding="utf-8") as f:
             content = f.read()
             # Split by "---" and strip whitespace
-            self.documents = [chunk.strip() for chunk in content.split("---") if chunk.strip()]
+            self.documents = [
+                chunk.strip() for chunk in content.split("---") if chunk.strip()
+            ]
         if os.getenv("FLASK_ENV") != "production":
             self.documents = self.documents[:]
-        
+
         self.logger.info("Embedding docs...")
         embeddings = self._embed_texts(self.documents)
-        
+
         self.logger.info("Writing index...")
         self.index = faiss.IndexFlatL2(embeddings.shape[1])
         self.index.add(embeddings)
@@ -97,18 +101,21 @@ class Giacomino:
     def generate_response(self, messages: list) -> str:
         assert isinstance(messages, list) and messages
         assert messages[-1]["role"] == "user"
-        
+
         # User message
         user_message = messages[-1]["content"]
 
         # Retrieve context
         context_docs = self.retrieve_context(user_message)
-        context = "\n".join(context_docs) if context_docs else "No specific context available."
-        
+        context = (
+            "\n".join(context_docs)
+            if context_docs
+            else "No specific context available."
+        )
+
         # Format prompt
         system_prompt = self.system_prompt.format(
-            context=context,
-            date=time.strftime("%B %-d, %Y")
+            context=context, date=time.strftime("%B %-d, %Y")
         )
 
         # Get model response
@@ -116,24 +123,20 @@ class Giacomino:
 
         # Save messages
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-        messages.insert(0, {"timestamp":timestamp})
-        messages.append({"role":"assistant", "content":response})
-        self._save_messages_to_disk(
-            messages
-        )
+        messages.insert(0, {"timestamp": timestamp})
+        messages.append({"role": "assistant", "content": response})
+        self._save_messages_to_disk(messages)
         return response
-
 
     def _save_messages_to_disk(self, messages, filepath="saved_messages.jsonl"):
         with open(filepath, "a", encoding="utf-8") as f:
             f.write(json.dumps(messages) + "\n")
 
-
     def get_available_docs(self) -> Dict[str, Any]:
         try:
             return {
                 "total_documents": len(self.documents),
-                "status": "available" if self.documents else "empty"
+                "status": "available" if self.documents else "empty",
             }
         except Exception as e:
             self.logger.info(f"Error getting docs info: {e}")

@@ -1,11 +1,10 @@
 import datetime
 import json
-import os
-from typing import Optional, Dict, Any
 from pathlib import Path
+from typing import Any, Dict, Optional
+
 
 class MyLogger:
-
     def __init__(self, name: str = "MyLogger", log_file: Optional[str] = None):
         self.name = name
         self.init_time = datetime.datetime.now()
@@ -13,11 +12,11 @@ class MyLogger:
         self.payload = ""
         self.log_count = 0
         self.session_id = self.init_time.strftime("%Y%m%d_%H%M%S")
-        
+
         # Create log directory if file logging is enabled
         if self.log_file:
             Path(self.log_file).parent.mkdir(parents=True, exist_ok=True)
-        
+
         # Log initialization
         self.log(f"Logger '{self.name}' initialized", level="INFO")
 
@@ -27,15 +26,15 @@ class MyLogger:
 
     def log(self, message: str, level: str = "INFO", print_console: bool = True):
         formatted_msg = self._format_message(message, level)
-        
+
         # Print to console
         if print_console:
             print(formatted_msg)
-        
+
         # Add to payload
         self.payload += f"{formatted_msg}\n"
         self.log_count += 1
-        
+
         # Write to file if specified
         if self.log_file:
             self._write_to_file(formatted_msg)
@@ -78,7 +77,7 @@ class MyLogger:
             "init_time": self.init_time.strftime("%d-%m-%Y %H:%M:%S"),
             "uptime_seconds": uptime.total_seconds(),
             "total_logs": self.log_count,
-            "log_file": self.log_file
+            "log_file": self.log_file,
         }
 
     def dumps(self) -> str:

@@ -4,3 +4,4 @@ saved_messages.jsonl
 .env
 __pycache__
 *ipynb
+.ruff_cache
