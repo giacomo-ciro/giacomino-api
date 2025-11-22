@@ -7,7 +7,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from giacomino import Giacomino
-from utils import MyLogger, requires_env
+from utils import MyLogger, requires_env, rate_limit
 
 load_dotenv()
 
@@ -76,9 +76,21 @@ def status_check():
 
 @app.route("/chat", methods=["POST"])
 @requires_env
+@rate_limit(int(os.environ.get("CHAT_REQUESTS_PER_HOUR_LIMIT")), 1, logger)
 def chat():
     """
     Main chat endpoint for the personal chatbot.
+    ```
+    response = requests.post(
+        url="http://127.0.0.1:5001/chat",
+        json={
+            "messages": [{
+                "role": "user",
+                "content": "hello"
+            }]
+        }
+    )
+    ```
     """
     if not giacomino:
         return jsonify({"error": "Model not available"}), 503

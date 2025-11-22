@@ -4,9 +4,9 @@ import os
 from functools import wraps
 from pathlib import Path
 from typing import Any, Dict, Optional
-
-from flask import jsonify
-
+import time
+from functools import wraps
+from flask import request, jsonify
 
 class MyLogger:
     def __init__(self, name: str = "MyLogger", log_file: Optional[str] = None):
@@ -109,3 +109,36 @@ def requires_env(func):
         return jsonify({"error": "Environment configuration missing."}), 400
 
     return wrapper
+
+# In-memory store: {(user, endpoint): [timestamps]}
+rate_limit_store = {}
+
+def rate_limit(request_count:int, h:int, logger=None):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            user = request.remote_addr  # Or use user id if authenticated
+            endpoint = request.endpoint
+            key = (user, endpoint)
+            now = time.time()
+            window = h * 3600
+
+            # Get or create the list of timestamps
+            timestamps = rate_limit_store.get(key, [])
+            # Remove timestamps outside the window
+            timestamps = [ts for ts in timestamps if now - ts < window]
+
+            if len(timestamps) >= request_count:
+                return jsonify({"error": "Rate limit exceeded. Please try again later."}), 429
+
+            log_msg = f"[RateLimit] Allowed: user={user}, endpoint={endpoint}, count={len(timestamps)}/{request_count} in last {h}h"
+            if logger:
+                logger.info(log_msg)
+
+            # Record this request
+            timestamps.append(now)
+            rate_limit_store[key] = timestamps
+
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
