@@ -94,7 +94,7 @@ def chat():
     """
     if not giacomino:
         return jsonify({"error": "Model not available"}), 503
-
+      
     try:
         data = request.get_json()
         if not data or "messages" not in data:

@@ -120,7 +120,10 @@ def rate_limit(request_count: int, h: int, logger=None):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            user = request.remote_addr  # Or use user id if authenticated
+            if request.headers.get("X-Forwarded-For"):
+                user=request.headers.get("X-Forwarded-For").split(",")[0].strip()
+            else:
+                user = request.remote_addr  # Or use user id if authenticated
             endpoint = request.endpoint
             key = (user, endpoint)
             now = time.time()
