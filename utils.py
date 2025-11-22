@@ -1,12 +1,13 @@
 import datetime
 import json
 import os
+import time
 from functools import wraps
 from pathlib import Path
 from typing import Any, Dict, Optional
-import time
-from functools import wraps
-from flask import request, jsonify
+
+from flask import jsonify, request
+
 
 class MyLogger:
     def __init__(self, name: str = "MyLogger", log_file: Optional[str] = None):
@@ -110,10 +111,12 @@ def requires_env(func):
 
     return wrapper
 
+
 # In-memory store: {(user, endpoint): [timestamps]}
 rate_limit_store = {}
 
-def rate_limit(request_count:int, h:int, logger=None):
+
+def rate_limit(request_count: int, h: int, logger=None):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -129,7 +132,9 @@ def rate_limit(request_count:int, h:int, logger=None):
             timestamps = [ts for ts in timestamps if now - ts < window]
 
             if len(timestamps) >= request_count:
-                return jsonify({"error": "Rate limit exceeded. Please try again later."}), 429
+                return jsonify(
+                    {"error": "Rate limit exceeded. Please try again later."}
+                ), 429
 
             log_msg = f"[RateLimit] Allowed: user={user}, endpoint={endpoint}, count={len(timestamps)}/{request_count} in last {h}h"
             if logger:
@@ -140,5 +145,7 @@ def rate_limit(request_count:int, h:int, logger=None):
             rate_limit_store[key] = timestamps
 
             return func(*args, **kwargs)
+
         return wrapper
+
     return decorator

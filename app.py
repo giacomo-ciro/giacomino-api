@@ -7,7 +7,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 from giacomino import Giacomino
-from utils import MyLogger, requires_env, rate_limit
+from utils import MyLogger, rate_limit, requires_env
 
 load_dotenv()
 
