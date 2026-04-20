@@ -2,19 +2,36 @@
 
 API for my custom [chatbot](https://www.giacomociro.com).
 
-## Setup
+## Commands
 
-Create a `.env` file in the root directory with the following entries:
+```bash
+# Install dependencies (uv required)
+uv sync
 
-```env
-TOGETHER_API_KEY=""                # Your Together API key
-FLASK_ENV="production"              # Flask environment (production/development)
-PORT=5000                           # Port to run the API
-RETRIEVE_TOP_K=10                   # Number of documents to put in context
-MAX_CHARS=2048                      # Max characters per conversation
-HISTORY_KEY=""                      # Password to access the history endpoint
-LOG_FILE="logs.txt"                 # Log file path
-TEXT_MODEL_PATH="meta-llama/Llama-3.2-3B-Instruct-Turbo"    # Model to generate answers
-EMB_MODEL_PATH="BAAI/bge-large-en-v1.5"                    # Embedding model
-CHAT_REQUESTS_PER_HOUR_LIMIT=10     # Rate limit for chat requests per hour
+# Run dev server (auto-reload)
+uvicorn app.main:app --reload --port 8000
+
+# Run production server
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# Run tests
+uv run pytest tests/ -v
+
+# Manual test
+curl -X POST http://127.0.0.1:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"messages": [{"role": "user", "content": "hello"}]}'
 ```
+
+## Environment
+
+`.env` contains secrets only:
+
+```
+TOGETHER_API_KEY=
+HISTORY_KEY=
+ADMIN_PASSWORD=
+JWT_SECRET=
+```
+
+Non-secret config (model names, rate limits, paths) lives in `configs/config.yaml`.

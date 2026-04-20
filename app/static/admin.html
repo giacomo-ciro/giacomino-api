@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giacomino Admin</title>
+<style>
+  :root {
+    --background-color: #f4f4f4;
+    --default-color: #333;
+    --accent-color: #666;
+    --contrast-color: #ddd;
+    --link-color: #0d1d91;
+    --error-color: #c0392b;
+    --success-color: #27ae60;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: sans-serif;
+    background-color: var(--background-color);
+    color: var(--default-color);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--contrast-color);
+  }
+
+  h1 { font-size: 1.4rem; font-weight: 500; color: var(--default-color); }
+  h2 { font-size: 1.1rem; font-weight: 500; margin-bottom: 16px; }
+
+  .card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 28px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 24px;
+  }
+
+  input, textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--contrast-color);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--default-color);
+    background: #fff;
+    transition: border-color 0.2s ease;
+    outline: none;
+  }
+
+  input:focus, textarea:focus { border-color: var(--accent-color); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 450;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary { background: var(--accent-color); color: #fff; }
+  .btn-primary:hover { background: color-mix(in srgb, var(--link-color), transparent 15%); }
+
+  .btn-secondary { background: var(--accent-color); color: #fff; }
+  .btn-secondary:hover { background: color-mix(in srgb, var(--accent-color), transparent 15%); }
+
+  .btn-danger { background: var(--error-color); color: #fff; }
+  .btn-danger:hover { background: color-mix(in srgb, var(--error-color), transparent 15%); }
+
+  .btn-ghost { background: transparent; color: var(--accent-color); border: 1px solid var(--contrast-color); }
+  .btn-ghost:hover { border-color: var(--accent-color); }
+
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; margin-bottom: 6px; font-weight: 450; font-size: 13px; color: var(--accent-color); }
+
+  .login-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  .login-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 40px 36px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .login-card h1 { font-size: 1.2rem; margin-bottom: 24px; text-align: center; }
+
+  .alert {
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .alert-error { background: #fdf0ef; color: var(--error-color); border: 1px solid #f5c6c2; }
+  .alert-success { background: #edf7f1; color: var(--success-color); border: 1px solid #b7e4c7; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--contrast-color);
+    vertical-align: top;
+  }
+
+  th {
+    font-weight: 500;
+    color: var(--accent-color);
+    background: #fafafa;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  tr:hover td { background: #fafafa; }
+
+  .doc-content { max-width: 560px; word-break: break-word; }
+
+  .doc-id {
+    font-family: monospace;
+    font-size: 11px;
+    color: var(--accent-color);
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .actions { display: flex; gap: 6px; white-space: nowrap; }
+
+  .edit-area { display: none; }
+
+  .tag { display: none; }
+
+  #loading {
+    text-align: center;
+    padding: 32px;
+    color: var(--accent-color);
+    font-size: 13px;
+  }
+
+  .dots::after {
+    content: '';
+    animation: dots 1.4s infinite;
+  }
+
+  @keyframes dots {
+    0%, 20%  { content: '.'; }
+    40%      { content: '..'; }
+    60%, 100%{ content: '...'; }
+  }
+
+  .add-form { display: none; }
+  .add-form.open { display: block; }
+
+  #add-toggle { margin-bottom: 20px; }
+
+  .table-wrap { overflow-x: auto; }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--accent-color);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN VIEW -->
+<div id="view-login" class="login-wrap">
+  <div class="login-card">
+    <h1>Giacomino Admin</h1>
+    <div id="login-error" class="alert alert-error" style="display:none"></div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter admin password" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Sign in</button>
+  </div>
+</div>
+
+<!-- ADMIN VIEW -->
+<div id="view-admin" style="display:none">
+  <div class="container">
+    <header>
+      <h1>Giacomino — Document Registry</h1>
+      <button class="btn btn-ghost" onclick="doLogout()">Logout</button>
+    </header>
+
+    <div id="alert-box" style="display:none" class="alert"></div>
+
+    <!-- ADD DOCUMENT -->
+    <button id="add-toggle" class="btn btn-primary" onclick="toggleAddForm()">+ Add Document</button>
+    <div id="add-form" class="card add-form">
+      <h2>New Document</h2>
+      <div class="form-group">
+        <label>Content</label>
+        <textarea id="new-content" placeholder="Enter document content..."></textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="doCreate()">Save</button>
+        <button class="btn btn-ghost" onclick="toggleAddForm()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- DOCUMENTS TABLE -->
+    <div class="card">
+      <div id="loading" style="display:none"><span class="dots">Loading</span></div>
+      <div id="table-wrap" class="table-wrap">
+        <table id="docs-table">
+          <thead>
+            <tr>
+              <th style="width:110px">ID</th>
+              <th>Content</th>
+              <th style="width:130px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="docs-body"></tbody>
+        </table>
+        <div id="empty-state" class="empty-state" style="display:none">No documents found.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = '';
+
+  function token() { return sessionStorage.getItem('token'); }
+
+  function authHeaders() {
+    return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token()}` };
+  }
+
+  function showAlert(msg, type = 'error') {
+    const el = document.getElementById('alert-box');
+    el.className = `alert alert-${type}`;
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', 4000);
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // --- AUTH ---
+  async function doLogin() {
+    const pw = document.getElementById('password').value;
+    const errEl = document.getElementById('login-error');
+    errEl.style.display = 'none';
+    try {
+      const res = await fetch(`${API}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw }),
+      });
+      if (!res.ok) { errEl.textContent = 'Invalid password'; errEl.style.display = 'block'; return; }
+      const data = await res.json();
+      sessionStorage.setItem('token', data.access_token);
+      showAdmin();
+    } catch {
+      errEl.textContent = 'Connection error. Is the server running?';
+      errEl.style.display = 'block';
+    }
+  }
+
+  function doLogout() {
+    sessionStorage.removeItem('token');
+    document.getElementById('view-admin').style.display = 'none';
+    document.getElementById('view-login').style.display = 'flex';
+    document.getElementById('password').value = '';
+  }
+
+  function showAdmin() {
+    document.getElementById('view-login').style.display = 'none';
+    document.getElementById('view-admin').style.display = 'block';
+    loadDocs();
+  }
+
+  // --- DOCS ---
+  async function loadDocs() {
+    const loading = document.getElementById('loading');
+    loading.style.display = 'block';
+    document.getElementById('empty-state').style.display = 'none';
+    try {
+      const res = await fetch(`${API}/admin/documents`, { headers: authHeaders() });
+      if (res.status === 401 || res.status === 403) { doLogout(); return; }
+      const docs = await res.json();
+      renderDocs(docs);
+    } catch {
+      showAlert('Failed to load documents');
+    } finally {
+      loading.style.display = 'none';
+    }
+  }
+
+  function renderDocs(docs) {
+    const tbody = document.getElementById('docs-body');
+    tbody.innerHTML = '';
+    if (!docs.length) {
+      document.getElementById('empty-state').style.display = 'block';
+      return;
+    }
+    docs.forEach(doc => {
+      const tr = document.createElement('tr');
+      tr.id = `row-${doc.id}`;
+      tr.innerHTML = `
+        <td class="doc-id" title="${escHtml(doc.id)}">${escHtml(doc.id.slice(0, 8))}…</td>
+        <td class="doc-content">
+          <span class="view-text">${escHtml(doc.content)}</span>
+          <textarea class="edit-area" id="edit-${escHtml(doc.id)}">${escHtml(doc.content)}</textarea>
+        </td>
+        <td class="actions">
+          <span class="view-actions">
+            <button class="btn btn-ghost btn-sm" onclick="startEdit('${escHtml(doc.id)}')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="doDelete('${escHtml(doc.id)}')">Delete</button>
+          </span>
+          <span class="edit-actions" style="display:none">
+            <button class="btn btn-primary btn-sm" onclick="doUpdate('${escHtml(doc.id)}')">Save</button>
+            <button class="btn btn-ghost btn-sm" onclick="cancelEdit('${escHtml(doc.id)}')">Cancel</button>
+          </span>
+        </td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function startEdit(id) {
+    const row = document.getElementById(`row-${id}`);
+    row.querySelector('.view-text').style.display = 'none';
+    row.querySelector('.edit-area').style.display = 'block';
+    row.querySelector('.view-actions').style.display = 'none';
+    row.querySelector('.edit-actions').style.display = 'flex';
+    row.querySelector('.edit-area').focus();
+  }
+
+  function cancelEdit(id) {
+    const row = document.getElementById(`row-${id}`);
+    row.querySelector('.view-text').style.display = '';
+    row.querySelector('.edit-area').style.display = 'none';
+    row.querySelector('.view-actions').style.display = '';
+    row.querySelector('.edit-actions').style.display = 'none';
+  }
+
+  async function doUpdate(id) {
+    const content = document.getElementById(`edit-${id}`).value.trim();
+    if (!content) { showAlert('Content cannot be empty'); return; }
+    try {
+      const res = await fetch(`${API}/admin/documents/${id}`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({ content }),
+      });
+      if (!res.ok) { showAlert('Update failed'); return; }
+      showAlert('Document updated', 'success');
+      loadDocs();
+    } catch { showAlert('Connection error'); }
+  }
+
+  async function doDelete(id) {
+    if (!confirm('Delete this document? This cannot be undone.')) return;
+    try {
+      const res = await fetch(`${API}/admin/documents/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      });
+      if (!res.ok) { showAlert('Delete failed'); return; }
+      showAlert('Document deleted', 'success');
+      loadDocs();
+    } catch { showAlert('Connection error'); }
+  }
+
+  async function doCreate() {
+    const content = document.getElementById('new-content').value.trim();
+    if (!content) { showAlert('Content cannot be empty'); return; }
+    try {
+      const res = await fetch(`${API}/admin/documents`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ content, metadata: {} }),
+      });
+      if (!res.ok) { showAlert('Create failed'); return; }
+      document.getElementById('new-content').value = '';
+      toggleAddForm();
+      showAlert('Document created', 'success');
+      loadDocs();
+    } catch { showAlert('Connection error'); }
+  }
+
+  function toggleAddForm() {
+    const form = document.getElementById('add-form');
+    const btn = document.getElementById('add-toggle');
+    const open = form.classList.toggle('open');
+    btn.textContent = open ? '✕ Cancel' : '+ Add Document';
+  }
+
+  // Enter key on login form
+  document.getElementById('password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  // Boot: check if already logged in
+  if (token()) {
+    showAdmin();
+  }
+</script>
+</body>
+</html>

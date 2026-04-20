@@ -1,0 +1,11 @@
+chat_model: "google/gemma-3n-E4B-it"
+embedding_model: "intfloat/multilingual-e5-large-instruct"
+retrieve_top_k: 10
+max_chars: 2048
+chat_rate_limit: 10
+port: 8000
+log_file: "logs.txt"
+chroma_db_path: "./chroma_db"
+documents_path: "./data/documents.txt"
+conversations_db_path: "./data/conversations.db"
+environment: "production"

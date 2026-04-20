@@ -1,8 +1,11 @@
 *.pkl
 *.index
-saved_messages.jsonl
 .env
-__pycache__
 *ipynb
-.ruff_cache
 logs.*
+chroma_db/
+data/conversations.db
+data/saved_messages.jsonl
+.venv/
+*cache
+__pycache__
