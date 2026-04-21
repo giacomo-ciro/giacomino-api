@@ -9,7 +9,6 @@ TEST_SECRETS = Secrets(
     TOGETHER_API_KEY="test-key",
     JWT_SECRET="test-jwt-secret",
     ADMIN_PASSWORD="test-password",
-    HISTORY_KEY="test-history-key",
 )
 
 
@@ -34,9 +33,9 @@ def mock_store(tmp_path, monkeypatch):
         embedding_model="test-emb-model",
         retrieve_top_k=3,
         max_chars=2048,
-        chat_rate_limit=100,
+        chat_rate_limit_per_hour=100,
         port=8000,
-        log_file="/tmp/test-logs.txt",
+        logs_db_path=str(tmp_path / "logs.db"),
         chroma_db_path=str(tmp_path / "chroma"),
         documents_path="data/documents.txt",
         conversations_db_path=str(tmp_path / "conversations.db"),
@@ -54,9 +53,9 @@ def client(tmp_path, monkeypatch):
         embedding_model="test-emb-model",
         retrieve_top_k=3,
         max_chars=2048,
-        chat_rate_limit=100,
+        chat_rate_limit_per_hour=100,
         port=8000,
-        log_file="/tmp/test-logs.txt",
+        logs_db_path=str(tmp_path / "logs.db"),
         chroma_db_path=str(tmp_path / "chroma"),
         documents_path="data/documents.txt",
         conversations_db_path=str(tmp_path / "conversations.db"),

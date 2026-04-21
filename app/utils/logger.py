@@ -1,23 +1,40 @@
 import datetime
 import json
+import sqlite3
 import threading
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 
 class MyLogger:
-    def __init__(self, name: str = "MyLogger", log_file: Optional[str] = None):
+    def __init__(self, name: str = "MyLogger", logs_db_path: Optional[str] = None):
         self.name = name
         self.init_time = datetime.datetime.now()
-        self.log_file = log_file
+        self._db_path = logs_db_path
         self.log_count = 0
         self.session_id = self.init_time.strftime("%Y%m%d_%H%M%S")
         self._lock = threading.Lock()
 
-        if self.log_file:
-            Path(self.log_file).parent.mkdir(parents=True, exist_ok=True)
+        if self._db_path:
+            self.setup()
 
         self.log(f"Logger '{self.name}' initialized", level="INFO")
+
+    def setup(self) -> None:
+        Path(self._db_path).parent.mkdir(parents=True, exist_ok=True)
+        with sqlite3.connect(self._db_path) as conn:
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS logs (
+                    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT NOT NULL,
+                    level     TEXT NOT NULL,
+                    logger    TEXT NOT NULL,
+                    message   TEXT NOT NULL
+                )
+            """)
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs(timestamp)")
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_logs_level ON logs(level)")
+            conn.commit()
 
     def _format_message(self, message: str, level: str = "INFO") -> str:
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -29,8 +46,8 @@ class MyLogger:
             print(formatted_msg)
         with self._lock:
             self.log_count += 1
-        if self.log_file:
-            self._write_to_file(formatted_msg)
+        if self._db_path:
+            self._write_to_db(level, message)
 
     def info(self, message: str):
         self.log(message, "INFO")
@@ -44,12 +61,16 @@ class MyLogger:
     def debug(self, message: str):
         self.log(message, "DEBUG")
 
-    def _write_to_file(self, formatted_message: str):
+    def _write_to_db(self, level: str, message: str) -> None:
         try:
-            with self._lock, open(self.log_file, "a", encoding="utf-8") as f:
-                f.write(formatted_message + "\n")
+            with self._lock, sqlite3.connect(self._db_path) as conn:
+                conn.execute(
+                    "INSERT INTO logs (timestamp, level, logger, message) VALUES (?, ?, ?, ?)",
+                    (datetime.datetime.now().isoformat(), level, self.name, message),
+                )
+                conn.commit()
         except Exception as e:
-            print(f"Failed to write to log file: {e}")
+            print(f"Failed to write to log DB: {e}")
 
     def log_dict(self, data: Dict[Any, Any], title: str = "Data"):
         self.log(f"{title}: {json.dumps(data, indent=2, default=str)}")
@@ -61,14 +82,22 @@ class MyLogger:
 
     def get_stats(self) -> Dict[str, Any]:
         uptime = datetime.datetime.now() - self.init_time
-        return {
+        stats: Dict[str, Any] = {
             "logger_name": self.name,
             "session_id": self.session_id,
             "init_time": self.init_time.strftime("%d-%m-%Y %H:%M:%S"),
             "uptime_seconds": uptime.total_seconds(),
             "total_logs": self.log_count,
-            "log_file": self.log_file,
+            "logs_db_path": self._db_path,
         }
+        if self._db_path:
+            with sqlite3.connect(self._db_path) as conn:
+                rows = conn.execute(
+                    "SELECT level, COUNT(*) FROM logs WHERE logger=? GROUP BY level",
+                    (self.name,),
+                ).fetchall()
+            stats["level_counts"] = {row[0]: row[1] for row in rows}
+        return stats
 
     def __str__(self):
         return f"MyLogger(name='{self.name}', logs={self.log_count}, uptime={datetime.datetime.now() - self.init_time})"

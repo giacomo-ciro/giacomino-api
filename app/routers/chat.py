@@ -1,9 +1,8 @@
-import aiosqlite
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from app.config import AppConfig, Secrets, get_config, get_secrets
+from app.config import AppConfig, get_config
 from app.dependencies import get_logger, get_pipeline
 from app.utils.logger import MyLogger
 from app.models.chat import ChatRequest, ChatResponse
@@ -21,7 +20,7 @@ def _get_client_ip(request: Request) -> str:
 
 
 @router.post("/chat", response_model=ChatResponse)
-@limiter.limit(f"{get_config().chat_rate_limit}/hour")
+@limiter.limit(f"{get_config().chat_rate_limit_per_hour}/hour")
 async def chat(
     body: ChatRequest,
     request: Request,
@@ -43,25 +42,3 @@ async def chat(
     response = await pipeline.run(ctx)
     logger.info(f"Chat response to {client_ip}: {len(response)} chars")
     return ChatResponse(text=response, timestamp=datetime.now().isoformat())
-
-
-@router.get("/history")
-async def get_history(
-    request: Request,
-    secrets: Secrets = Depends(get_secrets),
-    config: AppConfig = Depends(get_config),
-) -> dict:
-    auth_key = request.headers.get("Authorization") or request.query_params.get("key")
-    if not auth_key or auth_key != secrets.HISTORY_KEY:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    db_path = config.conversations_db_path
-    try:
-        async with aiosqlite.connect(db_path) as db:
-            db.row_factory = aiosqlite.Row
-            async with db.execute(
-                "SELECT id, timestamp, client_ip, user_message, assistant_response FROM conversations ORDER BY id DESC LIMIT 100"
-            ) as cursor:
-                rows = await cursor.fetchall()
-        return {"conversations": [dict(r) for r in rows]}
-    except Exception:
-        return {"conversations": [], "message": "No conversation history found"}

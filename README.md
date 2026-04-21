@@ -29,7 +29,6 @@ curl -X POST http://127.0.0.1:8000/chat \
 
 ```
 TOGETHER_API_KEY=
-HISTORY_KEY=
 ADMIN_PASSWORD=
 JWT_SECRET=
 ```

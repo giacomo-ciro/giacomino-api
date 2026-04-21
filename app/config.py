@@ -12,7 +12,6 @@ class Secrets(BaseSettings):
     TOGETHER_API_KEY: str
     JWT_SECRET: str
     ADMIN_PASSWORD: str
-    HISTORY_KEY: str
 
 
 class AppConfig(BaseModel):
@@ -20,9 +19,9 @@ class AppConfig(BaseModel):
     embedding_model: str
     retrieve_top_k: int
     max_chars: int
-    chat_rate_limit: int
+    chat_rate_limit_per_hour: int
     port: int
-    log_file: str
+    logs_db_path: str
     chroma_db_path: str
     documents_path: str
     conversations_db_path: str

@@ -51,7 +51,7 @@
     margin-bottom: 24px;
   }
 
-  input, textarea {
+  input, textarea, select {
     width: 100%;
     padding: 10px 14px;
     border: 1px solid var(--contrast-color);
@@ -64,7 +64,7 @@
     outline: none;
   }
 
-  input:focus, textarea:focus { border-color: var(--accent-color); }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent-color); }
   textarea { resize: vertical; min-height: 80px; }
 
   .btn {
@@ -77,17 +77,19 @@
     transition: all 0.2s ease;
   }
 
+  .btn:disabled { opacity: 0.4; cursor: default; }
+
   .btn-primary { background: var(--accent-color); color: #fff; }
-  .btn-primary:hover { background: color-mix(in srgb, var(--link-color), transparent 15%); }
+  .btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--link-color), transparent 15%); }
 
   .btn-secondary { background: var(--accent-color); color: #fff; }
-  .btn-secondary:hover { background: color-mix(in srgb, var(--accent-color), transparent 15%); }
+  .btn-secondary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent-color), transparent 15%); }
 
   .btn-danger { background: var(--error-color); color: #fff; }
-  .btn-danger:hover { background: color-mix(in srgb, var(--error-color), transparent 15%); }
+  .btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--error-color), transparent 15%); }
 
   .btn-ghost { background: transparent; color: var(--accent-color); border: 1px solid var(--contrast-color); }
-  .btn-ghost:hover { border-color: var(--accent-color); }
+  .btn-ghost:hover:not(:disabled) { border-color: var(--accent-color); }
 
   .btn-sm { padding: 4px 10px; font-size: 12px; }
 
@@ -146,7 +148,7 @@
 
   tr:hover td { background: #fafafa; }
 
-  .doc-content { max-width: 560px; word-break: break-word; }
+  .doc-content { max-width: 400px; word-break: break-word; }
 
   .doc-id {
     font-family: monospace;
@@ -161,15 +163,7 @@
   .actions { display: flex; gap: 6px; white-space: nowrap; }
 
   .edit-area { display: none; }
-
   .tag { display: none; }
-
-  #loading {
-    text-align: center;
-    padding: 32px;
-    color: var(--accent-color);
-    font-size: 13px;
-  }
 
   .dots::after {
     content: '';
@@ -184,7 +178,6 @@
 
   .add-form { display: none; }
   .add-form.open { display: block; }
-
   #add-toggle { margin-bottom: 20px; }
 
   .table-wrap { overflow-x: auto; }
@@ -195,6 +188,68 @@
     color: var(--accent-color);
     font-size: 13px;
   }
+
+  /* Dashboard nav cards */
+  .nav-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .nav-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border: 2px solid transparent;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .nav-card:hover { border-color: var(--accent-color); box-shadow: 0 6px 18px rgba(0,0,0,0.12); }
+  .nav-card h3 { font-size: 1rem; font-weight: 500; margin-bottom: 8px; }
+  .nav-card p  { font-size: 12px; color: var(--accent-color); }
+
+  /* Filter bar for conversations/logs */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .filter-bar .form-group { margin-bottom: 0; flex: 1; min-width: 130px; }
+  .filter-bar .form-group label { font-size: 11px; }
+  .filter-bar .btn { flex-shrink: 0; }
+
+  /* Pagination */
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--accent-color);
+  }
+
+  /* Section loading spinner */
+  .section-loading {
+    text-align: center;
+    padding: 20px;
+    color: var(--accent-color);
+    font-size: 13px;
+    display: none;
+  }
+
+  /* Log level badge */
+  .level-info    { color: var(--link-color); }
+  .level-warning { color: #b7791f; }
+  .level-error   { color: var(--error-color); }
+  .level-debug   { color: var(--accent-color); }
 </style>
 </head>
 <body>
@@ -212,17 +267,43 @@
   </div>
 </div>
 
-<!-- ADMIN VIEW -->
-<div id="view-admin" style="display:none">
+<!-- DASHBOARD VIEW -->
+<div id="view-dashboard" style="display:none">
   <div class="container">
     <header>
-      <h1>Giacomino — Document Registry</h1>
+      <h1>Giacomino Admin</h1>
       <button class="btn btn-ghost" onclick="doLogout()">Logout</button>
     </header>
+    <div class="nav-cards">
+      <div class="nav-card" onclick="showView('documents')">
+        <h3>Documents</h3>
+        <p>Manage knowledge base</p>
+      </div>
+      <div class="nav-card" onclick="showView('conversations')">
+        <h3>Conversations</h3>
+        <p>Browse chat history</p>
+      </div>
+      <div class="nav-card" onclick="showView('logs')">
+        <h3>Logs</h3>
+        <p>Application logs</p>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <div id="alert-box" style="display:none" class="alert"></div>
+<!-- DOCUMENTS VIEW -->
+<div id="view-documents" style="display:none">
+  <div class="container">
+    <header>
+      <h1>Documents</h1>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="showView('dashboard')">← Back</button>
+        <button class="btn btn-ghost" onclick="doLogout()">Logout</button>
+      </div>
+    </header>
 
-    <!-- ADD DOCUMENT -->
+    <div id="docs-alert-box" style="display:none" class="alert"></div>
+
     <button id="add-toggle" class="btn btn-primary" onclick="toggleAddForm()">+ Add Document</button>
     <div id="add-form" class="card add-form">
       <h2>New Document</h2>
@@ -236,11 +317,10 @@
       </div>
     </div>
 
-    <!-- DOCUMENTS TABLE -->
     <div class="card">
-      <div id="loading" style="display:none"><span class="dots">Loading</span></div>
-      <div id="table-wrap" class="table-wrap">
-        <table id="docs-table">
+      <div id="docs-loading" class="section-loading"><span class="dots">Loading</span></div>
+      <div class="table-wrap">
+        <table>
           <thead>
             <tr>
               <th style="width:110px">ID</th>
@@ -250,7 +330,115 @@
           </thead>
           <tbody id="docs-body"></tbody>
         </table>
-        <div id="empty-state" class="empty-state" style="display:none">No documents found.</div>
+        <div id="docs-empty" class="empty-state" style="display:none">No documents found.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONVERSATIONS VIEW -->
+<div id="view-conversations" style="display:none">
+  <div class="container">
+    <header>
+      <h1>Conversations</h1>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="showView('dashboard')">← Back</button>
+        <button class="btn btn-ghost" onclick="doLogout()">Logout</button>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="filter-bar">
+        <div class="form-group">
+          <label>From</label>
+          <input type="date" id="conv-date-from">
+        </div>
+        <div class="form-group">
+          <label>To</label>
+          <input type="date" id="conv-date-to">
+        </div>
+        <div class="form-group">
+          <label>IP address</label>
+          <input type="text" id="conv-ip" placeholder="e.g. 1.2.3.4">
+        </div>
+        <button class="btn btn-primary" onclick="loadConversations(1)">Apply</button>
+      </div>
+      <div id="conv-loading" class="section-loading"><span class="dots">Loading</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:150px">Timestamp</th>
+              <th style="width:110px">IP</th>
+              <th>User</th>
+              <th>Assistant</th>
+            </tr>
+          </thead>
+          <tbody id="conv-body"></tbody>
+        </table>
+        <div id="conv-empty" class="empty-state" style="display:none">No conversations found.</div>
+      </div>
+      <div class="pagination">
+        <span id="conv-page-info"></span>
+        <button class="btn btn-ghost btn-sm" id="conv-prev" onclick="convChangePage(-1)">Prev</button>
+        <button class="btn btn-ghost btn-sm" id="conv-next" onclick="convChangePage(1)">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGS VIEW -->
+<div id="view-logs" style="display:none">
+  <div class="container">
+    <header>
+      <h1>Logs</h1>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="showView('dashboard')">← Back</button>
+        <button class="btn btn-ghost" onclick="doLogout()">Logout</button>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="filter-bar">
+        <div class="form-group">
+          <label>From</label>
+          <input type="date" id="log-date-from">
+        </div>
+        <div class="form-group">
+          <label>To</label>
+          <input type="date" id="log-date-to">
+        </div>
+        <div class="form-group">
+          <label>Level</label>
+          <select id="log-level">
+            <option value="">All levels</option>
+            <option>INFO</option>
+            <option>WARNING</option>
+            <option>ERROR</option>
+            <option>DEBUG</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="loadLogs(1)">Apply</button>
+      </div>
+      <div id="logs-loading" class="section-loading"><span class="dots">Loading</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:150px">Timestamp</th>
+              <th style="width:80px">Level</th>
+              <th style="width:120px">Logger</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody id="logs-body"></tbody>
+        </table>
+        <div id="logs-empty" class="empty-state" style="display:none">No logs found.</div>
+      </div>
+      <div class="pagination">
+        <span id="logs-page-info"></span>
+        <button class="btn btn-ghost btn-sm" id="logs-prev" onclick="logsChangePage(-1)">Prev</button>
+        <button class="btn btn-ghost btn-sm" id="logs-next" onclick="logsChangePage(1)">Next</button>
       </div>
     </div>
   </div>
@@ -258,6 +446,7 @@
 
 <script>
   const API = '';
+  const VIEWS = ['login', 'dashboard', 'documents', 'conversations', 'logs'];
 
   function token() { return sessionStorage.getItem('token'); }
 
@@ -265,16 +454,32 @@
     return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token()}` };
   }
 
-  function showAlert(msg, type = 'error') {
-    const el = document.getElementById('alert-box');
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function showAlert(msg, type = 'error', boxId = 'docs-alert-box') {
+    const el = document.getElementById(boxId);
+    if (!el) return;
     el.className = `alert alert-${type}`;
     el.textContent = msg;
     el.style.display = 'block';
     setTimeout(() => el.style.display = 'none', 4000);
   }
 
-  function escHtml(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  // --- NAVIGATION ---
+  function showView(name) {
+    VIEWS.forEach(v => {
+      const el = document.getElementById(`view-${v}`);
+      if (el) el.style.display = 'none';
+    });
+    const target = document.getElementById(`view-${name}`);
+    if (!target) return;
+    target.style.display = name === 'login' ? 'flex' : 'block';
+
+    if (name === 'documents')     loadDocs();
+    if (name === 'conversations') loadConversations(1);
+    if (name === 'logs')          loadLogs(1);
   }
 
   // --- AUTH ---
@@ -291,7 +496,7 @@
       if (!res.ok) { errEl.textContent = 'Invalid password'; errEl.style.display = 'block'; return; }
       const data = await res.json();
       sessionStorage.setItem('token', data.access_token);
-      showAdmin();
+      showView('dashboard');
     } catch {
       errEl.textContent = 'Connection error. Is the server running?';
       errEl.style.display = 'block';
@@ -300,22 +505,15 @@
 
   function doLogout() {
     sessionStorage.removeItem('token');
-    document.getElementById('view-admin').style.display = 'none';
-    document.getElementById('view-login').style.display = 'flex';
+    showView('login');
     document.getElementById('password').value = '';
   }
 
-  function showAdmin() {
-    document.getElementById('view-login').style.display = 'none';
-    document.getElementById('view-admin').style.display = 'block';
-    loadDocs();
-  }
-
-  // --- DOCS ---
+  // --- DOCUMENTS ---
   async function loadDocs() {
-    const loading = document.getElementById('loading');
+    const loading = document.getElementById('docs-loading');
     loading.style.display = 'block';
-    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('docs-empty').style.display = 'none';
     try {
       const res = await fetch(`${API}/admin/documents`, { headers: authHeaders() });
       if (res.status === 401 || res.status === 403) { doLogout(); return; }
@@ -331,10 +529,7 @@
   function renderDocs(docs) {
     const tbody = document.getElementById('docs-body');
     tbody.innerHTML = '';
-    if (!docs.length) {
-      document.getElementById('empty-state').style.display = 'block';
-      return;
-    }
+    document.getElementById('docs-empty').style.display = docs.length ? 'none' : 'block';
     docs.forEach(doc => {
       const tr = document.createElement('tr');
       tr.id = `row-${doc.id}`;
@@ -427,14 +622,130 @@
     btn.textContent = open ? '✕ Cancel' : '+ Add Document';
   }
 
-  // Enter key on login form
+  // --- CONVERSATIONS ---
+  const convState = { page: 1, total: 0, limit: 20 };
+
+  async function loadConversations(page) {
+    convState.page = page;
+    const params = new URLSearchParams({ page, limit: convState.limit });
+    const from = document.getElementById('conv-date-from').value;
+    const to   = document.getElementById('conv-date-to').value;
+    const ip   = document.getElementById('conv-ip').value.trim();
+    if (from) params.set('date_from', from);
+    if (to)   params.set('date_to', to);
+    if (ip)   params.set('ip', ip);
+
+    const loading = document.getElementById('conv-loading');
+    loading.style.display = 'block';
+    document.getElementById('conv-empty').style.display = 'none';
+    try {
+      const res = await fetch(`${API}/admin/conversations?${params}`, { headers: authHeaders() });
+      if (res.status === 401 || res.status === 403) { doLogout(); return; }
+      const data = await res.json();
+      convState.total = data.total;
+      renderConversations(data);
+      updatePagination('conv', convState);
+    } catch {
+      document.getElementById('conv-empty').textContent = 'Failed to load conversations.';
+      document.getElementById('conv-empty').style.display = 'block';
+    } finally {
+      loading.style.display = 'none';
+    }
+  }
+
+  function renderConversations(data) {
+    const tbody = document.getElementById('conv-body');
+    tbody.innerHTML = '';
+    document.getElementById('conv-empty').style.display = data.items.length ? 'none' : 'block';
+    if (!data.items.length) return;
+    data.items.forEach(c => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="white-space:nowrap;font-size:12px">${escHtml(c.timestamp.slice(0, 19).replace('T', ' '))}</td>
+        <td style="font-family:monospace;font-size:12px">${escHtml(c.client_ip)}</td>
+        <td class="doc-content">${escHtml(c.user_message)}</td>
+        <td class="doc-content">${escHtml(c.assistant_response)}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function convChangePage(delta) {
+    const maxPage = Math.max(1, Math.ceil(convState.total / convState.limit));
+    const newPage = Math.max(1, Math.min(convState.page + delta, maxPage));
+    if (newPage !== convState.page) loadConversations(newPage);
+  }
+
+  // --- LOGS ---
+  const logsState = { page: 1, total: 0, limit: 50 };
+
+  async function loadLogs(page) {
+    logsState.page = page;
+    const params = new URLSearchParams({ page, limit: logsState.limit });
+    const from  = document.getElementById('log-date-from').value;
+    const to    = document.getElementById('log-date-to').value;
+    const level = document.getElementById('log-level').value;
+    if (from)  params.set('date_from', from);
+    if (to)    params.set('date_to', to);
+    if (level) params.set('level', level);
+
+    const loading = document.getElementById('logs-loading');
+    loading.style.display = 'block';
+    document.getElementById('logs-empty').style.display = 'none';
+    try {
+      const res = await fetch(`${API}/admin/logs?${params}`, { headers: authHeaders() });
+      if (res.status === 401 || res.status === 403) { doLogout(); return; }
+      const data = await res.json();
+      logsState.total = data.total;
+      renderLogs(data);
+      updatePagination('logs', logsState);
+    } catch {
+      document.getElementById('logs-empty').textContent = 'Failed to load logs.';
+      document.getElementById('logs-empty').style.display = 'block';
+    } finally {
+      loading.style.display = 'none';
+    }
+  }
+
+  function renderLogs(data) {
+    const tbody = document.getElementById('logs-body');
+    tbody.innerHTML = '';
+    document.getElementById('logs-empty').style.display = data.items.length ? 'none' : 'block';
+    if (!data.items.length) return;
+    data.items.forEach(l => {
+      const levelClass = `level-${l.level.toLowerCase()}`;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="white-space:nowrap;font-size:12px">${escHtml(l.timestamp.slice(0, 19).replace('T', ' '))}</td>
+        <td><span class="${levelClass}" style="font-weight:500;font-size:12px">${escHtml(l.level)}</span></td>
+        <td style="font-size:12px;color:var(--accent-color)">${escHtml(l.logger)}</td>
+        <td class="doc-content">${escHtml(l.message)}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function logsChangePage(delta) {
+    const maxPage = Math.max(1, Math.ceil(logsState.total / logsState.limit));
+    const newPage = Math.max(1, Math.min(logsState.page + delta, maxPage));
+    if (newPage !== logsState.page) loadLogs(newPage);
+  }
+
+  // --- SHARED PAGINATION ---
+  function updatePagination(prefix, state) {
+    const maxPage = Math.max(1, Math.ceil(state.total / state.limit));
+    document.getElementById(`${prefix}-page-info`).textContent =
+      `Page ${state.page} of ${maxPage} (${state.total} total)`;
+    document.getElementById(`${prefix}-prev`).disabled = state.page <= 1;
+    document.getElementById(`${prefix}-next`).disabled = state.page >= maxPage;
+  }
+
+  // Enter key on login
   document.getElementById('password').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLogin();
   });
 
   // Boot: check if already logged in
   if (token()) {
-    showAdmin();
+    showView('dashboard');
   }
 </script>
 </body>

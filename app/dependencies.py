@@ -33,7 +33,7 @@ def get_document_store() -> DocumentStore:
 @lru_cache(maxsize=1)
 def get_logger() -> MyLogger:
     config = get_config()
-    return MyLogger(name="giacomino-api", log_file=config.log_file)
+    return MyLogger(name="giacomino-api", logs_db_path=config.logs_db_path)
 
 
 def get_pipeline(
