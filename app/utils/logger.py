@@ -1,5 +1,6 @@
 import datetime
 import json
+import threading
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -9,9 +10,9 @@ class MyLogger:
         self.name = name
         self.init_time = datetime.datetime.now()
         self.log_file = log_file
-        self.payload = ""
         self.log_count = 0
         self.session_id = self.init_time.strftime("%Y%m%d_%H%M%S")
+        self._lock = threading.Lock()
 
         if self.log_file:
             Path(self.log_file).parent.mkdir(parents=True, exist_ok=True)
@@ -26,8 +27,8 @@ class MyLogger:
         formatted_msg = self._format_message(message, level)
         if print_console:
             print(formatted_msg)
-        self.payload += f"{formatted_msg}\n"
-        self.log_count += 1
+        with self._lock:
+            self.log_count += 1
         if self.log_file:
             self._write_to_file(formatted_msg)
 
@@ -45,7 +46,7 @@ class MyLogger:
 
     def _write_to_file(self, formatted_message: str):
         try:
-            with open(self.log_file, "a", encoding="utf-8") as f:
+            with self._lock, open(self.log_file, "a", encoding="utf-8") as f:
                 f.write(formatted_message + "\n")
         except Exception as e:
             print(f"Failed to write to log file: {e}")
@@ -68,14 +69,6 @@ class MyLogger:
             "total_logs": self.log_count,
             "log_file": self.log_file,
         }
-
-    def dumps(self) -> str:
-        return self.payload
-
-    def clear(self):
-        self.payload = ""
-        self.log_count = 0
-        self.log("Logger cleared", level="INFO")
 
     def __str__(self):
         return f"MyLogger(name='{self.name}', logs={self.log_count}, uptime={datetime.datetime.now() - self.init_time})"
