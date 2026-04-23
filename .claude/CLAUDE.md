@@ -88,10 +88,17 @@ data/
 ├── documents.txt       Knowledge base, chunks separated by ---
 └── conversations.db    SQLite conversation history (auto-created on startup)
 tests/
-├── conftest.py         TestClient + mock fixtures (isolated ChromaDB, mocked embeddings)
-├── test_auth.py
-├── test_chat.py
-└── test_documents.py
+├── conftest.py         Shared: TEST_SECRETS, _fake_embed, clear_lru_caches autouse fixture
+├── unit/
+│   ├── conftest.py     Unit fixtures: mock_store, client (TestClient, mocked embeddings + LLM)
+│   ├── test_auth.py
+│   ├── test_chat.py
+│   ├── test_documents.py
+│   ├── test_logger.py
+│   └── test_admin_endpoints.py
+└── integration/
+    ├── conftest.py     Integration fixtures: integration_docs, integration_client (tmp dirs only)
+    └── test_pipeline.py  ChromaDB seeding + full pipeline end-to-end test
 ```
 
 ### Key files
