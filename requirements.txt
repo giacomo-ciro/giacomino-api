@@ -1,6 +1,0 @@
-flask
-flask-cors
-together
-numpy
-python-dotenv
-faiss-cpu
