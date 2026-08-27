@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giacomino API — Control Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --background-color: #f4f4f4;
+      --surface-color: #ffffff;
+      --surface-subtle: #f9f9f9;
+      --default-color: #333333;
+      --heading-color: #1c1c1c;
+      --accent-color: #666666;
+      --contrast-color: #dddddd;
+      --border-subtle: #e5e5e5;
+      --link-color: #0d1d91;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --font-serif: 'EB Garamond', Georgia, 'Times New Roman', serif;
+      --status-ok: #15803d;
+      --status-ok-bg: #eaf8ee;
+      --status-ok-border: #bbf7d0;
+      --status-warn: #b45309;
+      --status-warn-bg: #fef8ee;
+      --status-warn-border: #fed7aa;
+      --status-err: #b91c1c;
+      --status-err-bg: #fef2f2;
+      --status-err-border: #fecaca;
+      --content-width: 1040px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--default-color);
+      background-color: var(--background-color);
+      line-height: 1.5;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 80px;
+    }
+
+    /* Container */
+    .dashboard-wrap {
+      max-width: var(--content-width);
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Header */
+    header.dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.75rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--contrast-color);
+    }
+
+    .brand-title {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      font-weight: 500;
+      color: var(--heading-color);
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--status-ok-bg);
+      color: var(--status-ok);
+      border: 1px solid var(--status-ok-border);
+    }
+
+    .live-pill.unhealthy {
+      background: var(--status-err-bg);
+      color: var(--status-err);
+      border-color: var(--status-err-border);
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+
+    /* Nav Tabs */
+    .dash-nav {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--contrast-color);
+      overflow-x: auto;
+    }
+
+    .nav-tab {
+      background: none;
+      border: none;
+      padding: 0.65rem 1rem;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--accent-color);
+      cursor: pointer;
+      position: relative;
+      white-space: nowrap;
+      transition: color 0.15s ease;
+    }
+
+    .nav-tab:hover {
+      color: var(--default-color);
+    }
+
+    .nav-tab.active {
+      color: var(--heading-color);
+    }
+
+    .nav-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: var(--default-color);
+    }
+
+    .badge-count {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      background: var(--contrast-color);
+      color: var(--default-color);
+      padding: 1px 6px;
+      border-radius: 10px;
+      margin-left: 4px;
+    }
+
+    /* Grid & Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: var(--surface-color);
+      border: 1px solid var(--contrast-color);
+      border-radius: 6px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
+
+    .card-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-color);
+      margin-bottom: 0.35rem;
+    }
+
+    .card-value {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--heading-color);
+      font-feature-settings: "tnum";
+    }
+
+    .card-subtext {
+      font-size: 0.75rem;
+      color: var(--accent-color);
+      margin-top: 0.35rem;
+      font-family: var(--font-mono);
+      word-break: break-all;
+    }
+
+    /* Tab Content Panels */
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* Section block */
+    .section-block {
+      background: var(--surface-color);
+      border: 1px solid var(--contrast-color);
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface-subtle);
+    }
+
+    .section-body {
+      padding: 1.25rem;
+    }
+
+    /* Buttons & Controls */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid var(--contrast-color);
+      background: var(--surface-color);
+      color: var(--default-color);
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background: #f0f0f0;
+      border-color: #ccc;
+    }
+
+    .btn-primary {
+      background: var(--heading-color);
+      color: #ffffff;
+      border-color: var(--heading-color);
+    }
+
+    .btn-primary:hover {
+      background: #333333;
+      border-color: #333333;
+      color: #ffffff;
+    }
+
+    .btn-sm {
+      padding: 3px 8px;
+      font-size: 0.75rem;
+    }
+
+    .input-text, .select-input {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      padding: 6px 10px;
+      border: 1px solid var(--contrast-color);
+      border-radius: 4px;
+      background: #ffffff;
+      color: var(--default-color);
+      outline: none;
+      width: 100%;
+      transition: border-color 0.15s ease;
+    }
+
+    .input-text:focus, .select-input:focus {
+      border-color: var(--link-color);
+    }
+
+    /* Log Viewer */
+    .log-viewer {
+      background: #181818;
+      color: #d1d5db;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      padding: 1rem;
+      border-radius: 4px;
+      height: 480px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+
+    .log-line {
+      display: flex;
+      margin-bottom: 2px;
+    }
+
+    .log-line:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .log-time {
+      color: #6b7280;
+      margin-right: 8px;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    .log-level-INFO { color: #60a5fa; font-weight: 600; margin-right: 8px; flex-shrink: 0; }
+    .log-level-WARNING { color: #fbbf24; font-weight: 600; margin-right: 8px; flex-shrink: 0; }
+    .log-level-ERROR { color: #f87171; font-weight: 600; margin-right: 8px; flex-shrink: 0; }
+    .log-level-DEBUG { color: #9ca3af; font-weight: 600; margin-right: 8px; flex-shrink: 0; }
+    .log-text { color: #e5e7eb; }
+
+    .log-filter-bar {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    /* Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      text-align: left;
+    }
+
+    .data-table th {
+      background: var(--surface-subtle);
+      color: var(--accent-color);
+      font-weight: 500;
+      padding: 0.65rem 0.9rem;
+      border-bottom: 1px solid var(--contrast-color);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .data-table td {
+      padding: 0.75rem 0.9rem;
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: middle;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background: rgba(0, 0, 0, 0.015);
+    }
+
+    .doc-chunk {
+      font-family: var(--font-sans);
+      color: var(--default-color);
+      max-width: 600px;
+      line-height: 1.45;
+    }
+
+    .doc-badge {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      background: var(--contrast-color);
+      border-radius: 4px;
+      color: #444;
+      white-space: nowrap;
+    }
+
+    /* .env Settings Single Block 2-Columns */
+    .env-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 2rem;
+      row-gap: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .env-grid-2col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      margin-bottom: 0.85rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: var(--heading-color);
+      margin-bottom: 0.35rem;
+    }
+
+    .input-with-action {
+      display: flex;
+      gap: 4px;
+    }
+
+    /* Message History */
+    .chat-history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .chat-session-card {
+      border: 1px solid var(--contrast-color);
+      border-radius: 6px;
+      background: var(--surface-color);
+      overflow: hidden;
+    }
+
+    .chat-session-header {
+      padding: 0.65rem 1rem;
+      background: var(--surface-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--accent-color);
+      font-family: var(--font-mono);
+    }
+
+    .chat-session-body {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .bubble {
+      max-width: 85%;
+      padding: 0.65rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    .bubble-user {
+      align-self: flex-end;
+      background: var(--accent-color);
+      color: #ffffff;
+      border-bottom-right-radius: 2px;
+    }
+
+    .bubble-assistant {
+      align-self: flex-start;
+      background: var(--surface-subtle);
+      color: var(--default-color);
+      border: 1px solid var(--border-subtle);
+      border-bottom-left-radius: 2px;
+    }
+
+    .bubble-role {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0.8;
+      margin-bottom: 2px;
+      font-weight: 600;
+    }
+
+    /* Prototype Floating Control Bar */
+    .proto-bar {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1c1c1ce6;
+      backdrop-filter: blur(8px);
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 30px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 9999;
+      font-size: 0.75rem;
+    }
+
+    .proto-bar select, .proto-bar input {
+      background: #2a2a2a;
+      color: #ffffff;
+      border: 1px solid #444;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      outline: none;
+    }
+
+    .proto-badge {
+      background: #3b82f6;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard-wrap">
+  <!-- Header -->
+  <header class="dash-header">
+    <div>
+      <h1 class="brand-title">Giacomino API</h1>
+    </div>
+    <div class="header-actions">
+      <div id="liveStatusPill" class="live-pill">
+        <span class="pulse-dot"></span>
+        <span id="liveStatusText">Online (Healthy)</span>
+      </div>
+      <button class="btn btn-sm" onclick="refreshDashboard()" title="Refresh all stats and logs">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="dash-nav">
+    <button class="nav-tab active" onclick="switchTab('overview')">
+      Overview & Health
+    </button>
+    <button class="nav-tab" onclick="switchTab('logs')">
+      API Logs <span class="badge-count" id="logCountBadge">42</span>
+    </button>
+    <button class="nav-tab" onclick="switchTab('documents')">
+      Indexed Documents <span class="badge-count" id="docCountBadge">14</span>
+    </button>
+    <button class="nav-tab" onclick="switchTab('settings')">
+      .env
+    </button>
+    <button class="nav-tab" onclick="switchTab('history')">
+      Chat History <span class="badge-count" id="historyCountBadge">18</span>
+    </button>
+  </nav>
+
+  <!-- TAB 1: OVERVIEW & HEALTH -->
+  <div id="tab-overview" class="tab-panel active">
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="card">
+        <div class="card-label">System Health</div>
+        <div class="card-value" style="color: var(--status-ok);" id="statHealth">Healthy</div>
+        <div class="card-subtext" id="statUptime">Uptime: 4d 18h 22m</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Port</div>
+        <div class="card-value" id="statPort">5001</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Requests (24h)</div>
+        <div class="card-value" id="statRequests24h">128 reqs</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Indexed Documents</div>
+        <div class="card-value" id="statDocs">14 chunks</div>
+      </div>
+    </div>
+
+    <!-- Active Models Minimal List -->
+    <div class="section-block">
+      <div class="section-body" style="padding: 0;">
+        <table class="data-table">
+          <tbody>
+            <tr>
+              <td style="width: 220px; color: var(--accent-color); font-weight: 500;">Text Generation</td>
+              <td><code id="tableTextModel">meta-llama/Llama-3.2-3B-Instruct-Turbo</code></td>
+            </tr>
+            <tr>
+              <td style="color: var(--accent-color); font-weight: 500;">Embeddings</td>
+              <td><code id="tableEmbModel">BAAI/bge-large-en-v1.5</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Query Simulator (Minimal) -->
+    <div class="section-block">
+      <div class="section-body">
+        <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem; align-items: center;">
+          <input type="text" id="simQueryInput" class="input-text" placeholder="Type a test query..." value="Where did Giacomo work during Formula 1?" style="flex: 1;">
+          <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+            <label for="simTopKInput" style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--accent-color);">Top K:</label>
+            <input type="number" id="simTopKInput" class="input-text" value="3" min="1" max="14" style="width: 55px; text-align: center; padding: 6px 4px;">
+          </div>
+          <button class="btn btn-primary" onclick="runSimulatedQuery()">Retrieve</button>
+        </div>
+        <div id="simQueryResult" style="background: var(--surface-subtle); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 0.9rem; font-size: 0.82rem; line-height: 1.5; color: var(--default-color); max-height: 280px; overflow-y: auto;">
+          <!-- Loaded by JS on initial run -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: API LOGS -->
+  <div id="tab-logs" class="tab-panel">
+    <div class="section-block">
+      <div class="section-body">
+        <!-- Log Filter Bar -->
+        <div class="log-filter-bar">
+          <div style="flex: 1; min-width: 200px;">
+            <input type="text" id="logSearchInput" class="input-text" placeholder="Filter logs by keyword or route..." oninput="filterLogs()">
+          </div>
+          <select id="logLevelFilter" class="select-input" style="width: auto;" onchange="filterLogs()">
+            <option value="ALL">All Levels</option>
+            <option value="INFO">INFO only</option>
+            <option value="WARNING">WARNING only</option>
+            <option value="ERROR">ERROR only</option>
+          </select>
+          <label style="font-size: 0.78rem; display: flex; align-items: center; gap: 4px; color: var(--accent-color); cursor: pointer;">
+            <input type="checkbox" id="autoScrollCheck" checked> Auto-scroll
+          </label>
+        </div>
+
+        <!-- Terminal-like Log Window -->
+        <div id="logViewer" class="log-viewer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: INDEXED DOCUMENTS -->
+  <div id="tab-documents" class="tab-panel">
+    <div class="section-block">
+      <div class="section-header">
+        <div style="flex: 1; max-width: 320px;">
+          <input type="text" id="docFilterInput" class="input-text" placeholder="Filter documents..." oninput="filterDocuments()">
+        </div>
+      </div>
+      <div class="section-body" style="padding: 0;">
+        <table class="data-table" id="documentsTable">
+          <thead>
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>Chunk</th>
+              <th style="width: 80px;">Chars</th>
+              <th style="width: 90px;">Status</th>
+            </tr>
+          </thead>
+          <tbody id="documentsTableBody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: .ENV SETTINGS -->
+  <div id="tab-settings" class="tab-panel">
+    <form id="envForm" onsubmit="saveEnvSettings(event)">
+      <div class="section-block">
+        <div class="section-body">
+          <div class="env-grid-2col">
+            <!-- Column 1 -->
+            <div>
+              <div class="form-group">
+                <label class="form-label">TEXT_MODEL_PATH</label>
+                <input type="text" id="env_TEXT_MODEL_PATH" class="input-text" value="meta-llama/Llama-3.2-3B-Instruct-Turbo">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">EMB_MODEL_PATH</label>
+                <input type="text" id="env_EMB_MODEL_PATH" class="input-text" value="BAAI/bge-large-en-v1.5">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">RETRIEVE_TOP_K</label>
+                <input type="number" id="env_RETRIEVE_TOP_K" class="input-text" value="10" min="1" max="50">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">MAX_CHARS</label>
+                <input type="number" id="env_MAX_CHARS" class="input-text" value="2048" min="100" max="10000">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">CHAT_REQUESTS_PER_HOUR_LIMIT</label>
+                <input type="number" id="env_CHAT_REQUESTS_PER_HOUR_LIMIT" class="input-text" value="10" min="1" max="1000">
+              </div>
+            </div>
+
+            <!-- Column 2 -->
+            <div>
+              <div class="form-group">
+                <label class="form-label">FLASK_ENV</label>
+                <select id="env_FLASK_ENV" class="select-input">
+                  <option value="production" selected>production</option>
+                  <option value="development">development</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">PORT</label>
+                <input type="number" id="env_PORT" class="input-text" value="5000">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">LOG_FILE</label>
+                <input type="text" id="env_LOG_FILE" class="input-text" value="logs.txt">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">TOGETHER_API_KEY</label>
+                <div class="input-with-action">
+                  <input type="password" id="env_TOGETHER_API_KEY" class="input-text" value="tgp_v1_mock_key_8492049281729384">
+                  <button type="button" class="btn btn-sm" onclick="togglePasswordVisibility('env_TOGETHER_API_KEY')">Show</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">HISTORY_KEY</label>
+                <div class="input-with-action">
+                  <input type="password" id="env_HISTORY_KEY" class="input-text" value="super_secret_history_pass_123">
+                  <button type="button" class="btn btn-sm" onclick="togglePasswordVisibility('env_HISTORY_KEY')">Show</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle);">
+            <button type="button" class="btn" onclick="resetEnvForm()">Discard Changes</button>
+            <button type="submit" class="btn btn-primary">Save .env</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- TAB 5: CHAT HISTORY -->
+  <div id="tab-history" class="tab-panel">
+    <div class="section-block">
+      <div class="section-header">
+        <div style="flex: 1; max-width: 320px;">
+          <input type="text" id="historySearchInput" class="input-text" placeholder="Search conversations..." oninput="filterHistory()">
+        </div>
+        <div class="section-actions">
+          <button class="btn btn-sm" onclick="exportHistoryJSON()">Export JSONL</button>
+        </div>
+      </div>
+      <div class="section-body">
+        <div id="chatHistoryContainer" class="chat-history-list">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Prototype Toolbar -->
+<div class="proto-bar">
+  <span class="proto-badge">tmp-design prototype</span>
+  <span>Data Mode:</span>
+  <select id="protoModeSelect" onchange="togglePrototypeDataMode(this.value)">
+    <option value="mock-healthy">Mock: Healthy & Active</option>
+    <option value="mock-degraded">Mock: Model Degraded</option>
+    <option value="live">Live API (Localhost:5001)</option>
+  </select>
+  <span id="protoLiveInputs" style="display: none; align-items: center; gap: 6px;">
+    <input type="text" id="protoApiUrl" value="http://127.0.0.1:5001" style="width: 130px;" title="API Base URL">
+    <input type="password" id="protoHistoryKey" placeholder="HISTORY_KEY" style="width: 90px;" title="History Auth Key">
+    <button class="btn btn-sm btn-primary" onclick="connectLiveApi()">Connect</button>
+  </span>
+</div>
+
+<script>
+  // --- MOCK & STATE STORE ---
+  const MOCK_DOCS = [
+    "Giacomo is 22 years old. Giacomo full name is Giacomo Cirò. He is based in Milan, Italy, where he studies at Bocconi University. His passion lies in Mathematics and Computer Science, and he aims for a career in Machine Learning research, Software Engineering, and Data Science.",
+    "Giacomo has expertise in artificial intelligence, machine learning, data science, software engineering, and computational biology. His educational background combines economics, computer science, and artificial intelligence. Giacomo is currently pursuing a Master of Science in Artificial Intelligence at Bocconi University.",
+    "Giacomo co-founded Bocconi Students for Machine Learning (BSML), the first machine learning project-incubator at his university. He wants to connect minds, not only layers, which motivated him to co-found BSML. Giacomo obtained 150+ signatures to found BSML and screened over 60 candidates.",
+    "He is currently working as a researcher at the Bocconi Institute for Data Science and Analytics. His research focuses on Machine Learning applied to Biology, specifically developing BioFormer: a novel architecture for gene expression modeling.",
+    "Giacomo has contributed to a diverse range of projects: Comparing CNN saliency maps with expert annotations on pediatric chest X-rays; Designing sequence length prediction for Diffusion Language Models (80% efficiency boost); Creating Gooper, a search engine for influencers.",
+    "Giacomo's algorithmic projects: Building an information retrieval system that selects relevant answers; Creating an optimal Wordle solver with 100% success rate; Image compression pipeline using K-means clustering; Debugging SCIP with gdb and AFL++.",
+    "Software & Systems: Implementing a compiler for a custom boolean programming language; Evolving Tinder with evolutionary matching algorithms; Interactive Q-learning visualization; Automated SNAI Daily Spin bot.",
+    "Data & Analytics: Formula 1 interactive statistics dashboard; Fixed & Random Effect econometric firm production models; Real estate price prediction in Milan, Rome, Venice across 45k properties.",
+    "Giacomo has a GPA of 30.0/30 in his MSc program at Bocconi University. He is a recipient of the Bocconi Graduate Merit Award consisting of full fees and tuition waiver (~€36,000).",
+    "Giacomo works in access control for Formula 1 Paddock Club events, coordinating entry for 1,000+ guests across 8 Grand Prix events in 5 countries (Monza, Mexico City, Monaco, Austria, Silverstone, Austin).",
+    "Technical skills: Python, R, SQL, StataSE, HTML-CSS-JS, Knime, SLURM, Adobe CC. Languages: Italian (Native), English (C1, IELTS 8.0), Spanish (B1). Boy-scout leader for 10+ years, rugby player for CUS Milano (2010-2023), boxer.",
+    "Contacts: giacomociro02@gmail.com, linkedin.com/in/giacomo-ciro, github.com/giacomo-ciro, giacomo-ciro.github.io.",
+    "Since April 2024, Giacomo is happily in a relationship with Matilde, a medical student with red hair. #relationship #love #girlfriend",
+    "Gaming & Leisure: Minecraft, Clash of Clans, Call of Duty, and Formula 1 racing simulators."
+  ];
+
+  let rawLogs = [
+    "[2026-08-27 19:28:10] [INFO] [MyLogger] Logger 'MyLogger' initialized",
+    "[2026-08-27 19:28:10] [INFO] [MyLogger] Starting Flask app on port 5001 with debug=False",
+    "[2026-08-27 19:28:11] [INFO] [MyLogger] Loading system prompt from ./system.txt",
+    "[2026-08-27 19:28:11] [INFO] [MyLogger] Loading docs from documents.txt...",
+    "[2026-08-27 19:28:12] [INFO] [MyLogger] Requesting embeddings from Together API (model: BAAI/bge-large-en-v1.5)",
+    "[2026-08-27 19:28:13] [INFO] [MyLogger] Writing index to faiss_index.index (14 vectors, dim=1024)",
+    "[2026-08-27 19:28:13] [INFO] [MyLogger] Giacomino model initialized with meta-llama/Llama-3.2-3B-Instruct-Turbo",
+    "[2026-08-27 19:29:04] [INFO] [MyLogger] [RateLimit] Allowed: user=127.0.0.1, endpoint=chat, count=1/10 in last 1h",
+    "[2026-08-27 19:29:05] [INFO] [MyLogger] Chat completion request sent: 1 message, context length 340 tokens",
+    "[2026-08-27 19:29:06] [INFO] [MyLogger] Chat response generated in 0.94s (saved to saved_messages.jsonl)",
+    "[2026-08-27 19:30:15] [INFO] [MyLogger] Auth access attempt with key: *** [Authorized]",
+    "[2026-08-27 19:30:15] [INFO] [MyLogger] History endpoint accessed successfully"
+  ];
+
+  let mockHistory = [
+    {
+      timestamp: "2026-08-27 19:29:04",
+      user: "Hi! Where does Giacomo study and what is his degree?",
+      assistant: "Ciao! Giacomo is currently pursuing a Master of Science in Artificial Intelligence at Bocconi University in Milan, Italy. He previously graduated cum laude with a Bachelor of Science in Economics and Computer Science from Bocconi as well!"
+    },
+    {
+      timestamp: "2026-08-27 18:45:12",
+      user: "Tell me about his work with Formula 1.",
+      assistant: "Giacomo coordinates access control for Formula 1 Paddock Club events, managing entry for over 1,000 VIP guests. He has worked at 8 Grand Prix races across 5 countries, including Monza, Monaco, Silverstone, Austria, Mexico City, and Austin."
+    },
+    {
+      timestamp: "2026-08-27 17:10:00",
+      user: "What's the BSML initiative?",
+      assistant: "Giacomo co-founded Bocconi Students for Machine Learning (BSML), the first ML project incubator at Bocconi University. He gathered 150+ signatures, built the association's website, and led hackathons and speaker events."
+    }
+  ];
+
+  // --- TAB NAVIGATION ---
+  function switchTab(tabId) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    
+    const buttons = Array.from(document.querySelectorAll('.nav-tab'));
+    const matchedBtn = buttons.find(b => b.getAttribute('onclick').includes(tabId));
+    if (matchedBtn) matchedBtn.classList.add('active');
+
+    const panel = document.getElementById(`tab-${tabId}`);
+    if (panel) panel.classList.add('active');
+  }
+
+  // --- RENDER FUNCTIONS ---
+  function renderLogs() {
+    const viewer = document.getElementById('logViewer');
+    const search = document.getElementById('logSearchInput').value.toLowerCase();
+    const level = document.getElementById('logLevelFilter').value;
+
+    viewer.innerHTML = '';
+    const filtered = rawLogs.filter(line => {
+      if (level !== 'ALL' && !line.includes(`[${level}]`)) return false;
+      if (search && !line.toLowerCase().includes(search)) return false;
+      return true;
+    });
+
+    filtered.forEach(line => {
+      const match = line.match(/^\[(.*?)\] \[(.*?)\] \[(.*?)\] (.*)$/);
+      const row = document.createElement('div');
+      row.className = 'log-line';
+
+      if (match) {
+        const [, time, lvl, name, msg] = match;
+        row.innerHTML = `<span class="log-time">[${time}]</span><span class="log-level-${lvl}">[${lvl}]</span><span class="log-text">${escapeHtml(msg)}</span>`;
+      } else {
+        row.innerHTML = `<span class="log-text">${escapeHtml(line)}</span>`;
+      }
+      viewer.appendChild(row);
+    });
+
+    if (document.getElementById('autoScrollCheck').checked) {
+      viewer.scrollTop = viewer.scrollHeight;
+    }
+    document.getElementById('logCountBadge').textContent = filtered.length;
+  }
+
+  function filterLogs() {
+    renderLogs();
+  }
+
+  function renderDocuments() {
+    const tbody = document.getElementById('documentsTableBody');
+    const filter = (document.getElementById('docFilterInput')?.value || '').toLowerCase();
+    tbody.innerHTML = '';
+
+    MOCK_DOCS.forEach((doc, idx) => {
+      if (filter && !doc.toLowerCase().includes(filter)) return;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="font-family: var(--font-mono); color: var(--accent-color);">${idx + 1}</td>
+        <td class="doc-chunk">${escapeHtml(doc)}</td>
+        <td style="font-family: var(--font-mono);">${doc.length}</td>
+        <td><span class="doc-badge" style="background: var(--status-ok-bg); color: var(--status-ok);">Indexed</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    document.getElementById('docCountBadge').textContent = MOCK_DOCS.length;
+  }
+
+  function filterDocuments() {
+    renderDocuments();
+  }
+
+  function renderHistory() {
+    const container = document.getElementById('chatHistoryContainer');
+    const search = (document.getElementById('historySearchInput')?.value || '').toLowerCase();
+    container.innerHTML = '';
+
+    const filtered = mockHistory.filter(h => {
+      if (!search) return true;
+      return h.user.toLowerCase().includes(search) || h.assistant.toLowerCase().includes(search);
+    });
+
+    filtered.forEach(session => {
+      const card = document.createElement('div');
+      card.className = 'chat-session-card';
+      card.innerHTML = `
+        <div class="chat-session-header">
+          <span>Session Timestamp: ${session.timestamp}</span>
+          <span>Role-Turn: 2 Messages</span>
+        </div>
+        <div class="chat-session-body">
+          <div class="bubble bubble-user">
+            <div class="bubble-role">User</div>
+            <div>${escapeHtml(session.user)}</div>
+          </div>
+          <div class="bubble bubble-assistant">
+            <div class="bubble-role">Giacomino (Assistant)</div>
+            <div>${escapeHtml(session.assistant)}</div>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    document.getElementById('historyCountBadge').textContent = filtered.length;
+  }
+
+  function filterHistory() {
+    renderHistory();
+  }
+
+  // --- ACTIONS ---
+  function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    input.type = input.type === 'password' ? 'text' : 'password';
+  }
+
+  function saveEnvSettings(e) {
+    e.preventDefault();
+    const port = document.getElementById('env_PORT').value;
+    const textModel = document.getElementById('env_TEXT_MODEL_PATH').value;
+    const embModel = document.getElementById('env_EMB_MODEL_PATH').value;
+    
+    document.getElementById('tableTextModel').textContent = textModel;
+    document.getElementById('tableEmbModel').textContent = embModel;
+    document.getElementById('statPort').textContent = `${port}`;
+
+    rawLogs.push(`[${new Date().toISOString().replace('T', ' ').slice(0, 19)}] [INFO] [MyLogger] .env configuration file updated.`);
+    renderLogs();
+    
+    alert('.env settings saved successfully!');
+  }
+
+  function resetEnvForm() {
+    if (confirm('Discard all unsaved changes to .env settings?')) {
+      document.getElementById('envForm').reset();
+    }
+  }
+
+  function exportHistoryJSON() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(mockHistory, null, 2));
+    const dlAnchor = document.createElement('a');
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download", "saved_messages.json");
+    dlAnchor.click();
+  }
+
+  function runSimulatedQuery() {
+    const q = (document.getElementById('simQueryInput').value || '').trim();
+    const k = parseInt(document.getElementById('simTopKInput').value, 10) || 3;
+    const resultBox = document.getElementById('simQueryResult');
+    
+    if (!q) {
+      resultBox.innerHTML = '<span style="color: var(--accent-color);">Please enter a query.</span>';
+      return;
+    }
+    
+    resultBox.innerHTML = '<span style="color: var(--accent-color);"><em>Retrieving top matches...</em></span>';
+    
+    setTimeout(() => {
+      const terms = q.toLowerCase().split(/\s+/).filter(t => t.length > 2);
+      const scoredDocs = MOCK_DOCS.map((doc, idx) => {
+        const lower = doc.toLowerCase();
+        let score = 0;
+        terms.forEach(term => {
+          if (lower.includes(term)) score += 10;
+        });
+        return { doc, idx, score };
+      });
+
+      scoredDocs.sort((a, b) => b.score - a.score || a.idx - b.idx);
+      const topResults = scoredDocs.slice(0, Math.min(k, MOCK_DOCS.length));
+
+      let html = '<div style="display: flex; flex-direction: column; gap: 0.75rem;">';
+      topResults.forEach((item, i) => {
+        html += `
+          <div style="padding-bottom: ${i === topResults.length - 1 ? '0' : '0.65rem'}; ${i === topResults.length - 1 ? '' : 'border-bottom: 1px solid var(--border-subtle);'}">
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-color); margin-bottom: 2px;">
+              #${i + 1} &bull; Document Chunk [Index ${item.idx + 1}]
+            </div>
+            <div>${escapeHtml(item.doc)}</div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      resultBox.innerHTML = html;
+    }, 180);
+  }
+
+  function refreshDashboard() {
+    const mode = document.getElementById('protoModeSelect').value;
+    if (mode === 'live') {
+      fetchLiveStatus();
+    } else {
+      renderLogs();
+      renderDocuments();
+      renderHistory();
+      runSimulatedQuery();
+    }
+  }
+
+  // --- PROTOTYPE STATE TOGGLE ---
+  function togglePrototypeDataMode(val) {
+    const liveInputs = document.getElementById('protoLiveInputs');
+    const pill = document.getElementById('liveStatusPill');
+    const text = document.getElementById('liveStatusText');
+    const statHealth = document.getElementById('statHealth');
+
+    if (val === 'live') {
+      liveInputs.style.display = 'inline-flex';
+      fetchLiveStatus();
+    } else if (val === 'mock-degraded') {
+      liveInputs.style.display = 'none';
+      pill.className = 'live-pill unhealthy';
+      text.textContent = 'Degraded (Embedding Err)';
+      statHealth.textContent = 'Degraded';
+      statHealth.style.color = 'var(--status-err)';
+      rawLogs.push(`[${new Date().toISOString().replace('T', ' ').slice(0, 19)}] [ERROR] [MyLogger] Failed to reach Together API embeddings endpoint`);
+      renderLogs();
+    } else {
+      liveInputs.style.display = 'none';
+      pill.className = 'live-pill';
+      text.textContent = 'Online (Healthy)';
+      statHealth.textContent = 'Healthy';
+      statHealth.style.color = 'var(--status-ok)';
+      renderLogs();
+    }
+  }
+
+  function formatSeconds(sec) {
+    if (!sec && sec !== 0) return 'N/A';
+    const d = Math.floor(sec / 86400);
+    const h = Math.floor((sec % 86400) / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    if (d > 0) return `${d}d ${h}h ${m}m`;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+  }
+
+  async function fetchLiveStatus() {
+    const url = document.getElementById('protoApiUrl').value.replace(/\/$/, '');
+    try {
+      const res = await fetch(`${url}/status`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      
+      document.getElementById('statHealth').textContent = data.status === 'healthy' ? 'Healthy' : 'Unhealthy';
+      document.getElementById('statHealth').style.color = data.status === 'healthy' ? 'var(--status-ok)' : 'var(--status-err)';
+      
+      if (data.logger_status && data.logger_status.uptime_seconds !== undefined) {
+        document.getElementById('statUptime').textContent = `Uptime: ${formatSeconds(data.logger_status.uptime_seconds)}`;
+      }
+      if (data.models) {
+        document.getElementById('tableTextModel').textContent = data.models.model_text;
+        document.getElementById('tableEmbModel').textContent = data.models.model_embeddings;
+      }
+      if (data.logs_dump) {
+        rawLogs = data.logs_dump.split('\n').filter(Boolean);
+        renderLogs();
+      }
+    } catch (err) {
+      console.warn('Could not connect to live API:', err);
+      document.getElementById('liveStatusText').textContent = 'Cannot reach API';
+      document.getElementById('liveStatusPill').className = 'live-pill unhealthy';
+    }
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // --- INITIALIZATION ---
+  window.addEventListener('DOMContentLoaded', () => {
+    renderLogs();
+    renderDocuments();
+    renderHistory();
+    runSimulatedQuery();
+  });
+</script>
+</body>
+</html>

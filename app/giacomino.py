@@ -1,14 +1,15 @@
+import hashlib
 import json
-import os
+import logging
+import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
-import faiss
+import chromadb
 import numpy as np
+import yaml
 from together import Together
-
-from utils import MyLogger
 
 
 class Giacomino:
@@ -16,68 +17,83 @@ class Giacomino:
 
     def __init__(
         self,
-        logger: MyLogger,
+        logger: logging.Logger,
+        together_api_key: str,
+        chroma_persist_dir: str,
         model_text: str = "meta-llama/Llama-3.2-3B-Instruct-Turbo",
         model_embeddings: str = "BAAI/bge-large-en-v1.5",
+        top_k: int = 10,
     ):
         self.logger = logger
-        self.together_api_key = os.getenv("TOGETHER_API_KEY")
-        if not self.together_api_key:
+        if not together_api_key:
             self.logger.error("TOGETHER_API_KEY environment variable not set")
-            exit()
-
-        self.together = Together(api_key=self.together_api_key)
+            sys.exit()
+        self.together = Together(api_key=together_api_key)
         self.model_text = model_text
         self.model_embeddings = model_embeddings
+        self.top_k = top_k
 
-        self.index_file = "faiss_index.index"
-        self.doc_file = "faiss_docs.pkl"
+        self.chroma_client = chromadb.PersistentClient(path=chroma_persist_dir)
+        self.collection = self.chroma_client.get_or_create_collection(
+            name="documents", embedding_function=None
+        )
 
-        self.top_k = int(os.environ.get("RETRIEVE_TOP_K", 1))
         self._load_prompts()
         self._load_documents()
 
     def _load_prompts(self):
-        path_to_sys = Path("./system.txt")
+        path_to_sys = Path("prompts/system.txt")
         assert path_to_sys.exists()
         with open(path_to_sys, "r") as f:
             self.system_prompt = f.read()
         self.logger.info(f"System prompt loaded from {path_to_sys}")
 
-    def _embed_texts(self, texts: List[str]) -> np.ndarray:
+    def _embed_texts(self, texts: list[str]) -> np.ndarray:
         response = self.together.embeddings.create(
             model=self.model_embeddings, input=texts
         )
         embeddings = [item.embedding for item in response.data]
         return np.array(embeddings).astype("float32")
 
+    def _chunk_id(self, text: str) -> str:
+        return f"chunk_{hashlib.sha256(text.encode()).hexdigest()[:12]}"
+
     def _load_documents(self):
         self.logger.info("Loading docs...")
-        docs_file = Path("documents.txt")
+        docs_file = Path("documents/documents.yaml")
         assert docs_file.exists()
         with open(docs_file, "r", encoding="utf-8") as f:
-            content = f.read()
-            # Split by "---" and strip whitespace
-            self.documents = [
-                chunk.strip() for chunk in content.split("---") if chunk.strip()
-            ]
-        if os.getenv("FLASK_ENV") == "development":
-            self.documents = self.documents[:2]
+            self.documents = [chunk.strip() for chunk in yaml.safe_load(f)]
 
-        self.logger.info("Embedding docs...")
-        embeddings = self._embed_texts(self.documents)
+        current = {self._chunk_id(c): c for c in self.documents}
+        existing_ids = set(self.collection.get()["ids"])
+        new_ids = set(current) - existing_ids
+        stale_ids = existing_ids - set(current)
 
-        self.logger.info("Writing index...")
-        self.index = faiss.IndexFlatL2(embeddings.shape[1])
-        self.index.add(embeddings)
-        faiss.write_index(self.index, self.index_file)
+        if stale_ids:
+            self.logger.info(f"Removing {len(stale_ids)} stale chunks from Chroma...")
+            self.collection.delete(ids=list(stale_ids))
 
-        self.logger.info(f"Loaded {len(self.documents)} documents into FAISS index")
+        if new_ids:
+            self.logger.info(f"Embedding {len(new_ids)} new/changed chunks...")
+            new_docs = [current[i] for i in new_ids]
+            embeddings = self._embed_texts(new_docs)
+            self.collection.add(
+                ids=list(new_ids),
+                embeddings=embeddings.tolist(),
+                documents=new_docs,
+            )
 
-    def retrieve_context(self, query: str) -> List[str]:
+        self.logger.info(
+            f"Loaded {len(self.documents)} documents into Chroma collection"
+        )
+
+    def retrieve_context(self, query: str) -> list[str]:
         query_vec = self._embed_texts([query])
-        distances, indices = self.index.search(query_vec, self.top_k)
-        return [self.documents[i] for i in indices[0] if i < len(self.documents)]
+        results = self.collection.query(
+            query_embeddings=query_vec.tolist(), n_results=self.top_k
+        )
+        return results["documents"][0]
 
     def _send_chat_completion_request(self, system_prompt, messages) -> str:
         for mex in messages:
@@ -128,16 +144,17 @@ class Giacomino:
         self._save_messages_to_disk(messages)
         return response
 
-    def _save_messages_to_disk(self, messages, filepath="saved_messages.jsonl"):
+    def _save_messages_to_disk(self, messages, filepath="dump/saved_messages.jsonl"):
+        Path(filepath).parent.mkdir(parents=True, exist_ok=True)
         with open(filepath, "a", encoding="utf-8") as f:
             f.write(json.dumps(messages) + "\n")
 
-    def get_available_docs(self) -> Dict[str, Any]:
+    def get_available_docs(self) -> dict[str, Any]:
         try:
             return {
                 "quantity": len(self.documents),
                 "status": "available" if self.documents else "empty",
             }
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 — intentional safety net, never surfaces internals to the caller
             self.logger.info(f"Error getting docs info: {e}")
             return {"quantity": 0, "status": "error"}
